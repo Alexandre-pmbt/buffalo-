@@ -1,0 +1,797 @@
+<!doctype html>
+<html lang="fr">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<meta name="robots" content="noindex">
+<link rel="icon" href="logo_on_dark.png">
+<script src="config.js"></script>
+<title>Réservations · BUFFALO</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Teko:wght@500;600&family=Barlow+Condensed:ital,wght@0,400;0,500;0,600;0,700;1,400&display=swap">
+<style>
+/* Layout : en-tête de service (date, service, soir de match, jauge), puis le plan d'architecte à gauche et le carnet de réservations à droite ; empilés sur téléphone. Identité BUFFALO, un seul thème sombre assumé (écran de salle). */
+:root{
+  --bg:#121110; --panel:#1b1918; --card:#24201e; --line:#3a332f; --wall:#8d8378;
+  --red:#e3232b; --red-soft:rgba(227,35,43,.22); --cream:#f6eedd; --muted:#a99f93;
+  --amber:#e9a53a; --amber-soft:rgba(233,165,58,.22); --green:#3fae63; --green-soft:rgba(63,174,99,.2);
+  --tabletop:#2f2a27; --chair:#4a423d; --terrace:#171c16; --hatch:#2a2522;
+  --display:"Teko","Oswald","Arial Narrow",sans-serif;
+  --body:"Barlow Condensed","Arial Narrow",system-ui,sans-serif;
+  color-scheme:dark;
+}
+*{box-sizing:border-box}
+[hidden]{display:none!important}
+img{max-width:100%}
+html,body{background:var(--bg);color:var(--cream)}
+body{font-family:var(--body);font-size:16px;line-height:1.3;padding-left:max(16px, env(safe-area-inset-left, 0px));padding-right:max(16px, env(safe-area-inset-right, 0px));padding-block:14px 90px;
+  background:radial-gradient(80% 40% at 100% 0%, rgba(227,35,43,.10), transparent 60%), var(--bg)}
+button,select,input,textarea{font:inherit;color:inherit}
+button{cursor:pointer;border:0;background:none}
+:focus-visible{outline:2px solid var(--cream);outline-offset:2px}
+.d{font-family:var(--display);text-transform:uppercase;letter-spacing:.02em;line-height:.95}
+.muted{color:var(--muted)}
+.wrap{max-width:1500px;margin:0 auto;display:flex;flex-direction:column;gap:14px}
+
+/* En-tête */
+.top{display:flex;flex-wrap:wrap;align-items:center;gap:12px 18px}
+.top img{width:56px;height:auto}
+.top h1{margin:0;font-size:38px}
+.top .sub{color:var(--muted);font-size:15px}
+.brand{display:flex;align-items:center;gap:12px;flex:1;min-width:min(240px,100%)}
+.brand>div{min-width:0}
+.ctl{display:flex;flex-wrap:wrap;gap:10px;align-items:center}
+.datenav{display:flex;align-items:center;background:var(--panel);border:1px solid var(--line);border-radius:12px;overflow:hidden}
+.datenav button{padding:8px 12px;font-size:18px}
+.datenav button:hover{background:var(--card)}
+.datenav input{background:transparent;border:0;padding:6px 4px;width:150px;text-align:center;font-weight:600;color-scheme:dark}
+.datelbl{font-weight:700;text-transform:capitalize;min-width:170px}
+.seg{display:flex;background:var(--panel);border:1px solid var(--line);border-radius:12px;padding:3px;gap:3px}
+.seg button{padding:7px 12px 3px;border-radius:9px;font-family:var(--display);font-size:21px;text-transform:uppercase;color:var(--muted)}
+.seg button[aria-pressed="true"]{background:var(--red);color:#fff}
+.match{display:inline-flex;align-items:center;gap:8px;padding:7px 12px;border-radius:12px;border:1px solid var(--line);background:var(--panel);font-weight:700}
+.match[aria-pressed="true"]{background:var(--red-soft);border-color:var(--red)}
+.sw{width:40px;height:22px;border-radius:999px;background:var(--line);position:relative;flex:none}
+.sw::after{content:"";position:absolute;top:3px;left:3px;width:16px;height:16px;border-radius:50%;background:var(--cream);transition:left .15s}
+.match[aria-pressed="true"] .sw{background:var(--red)}
+.match[aria-pressed="true"] .sw::after{left:21px}
+
+/* Jauge */
+.gauge{display:grid;grid-template-columns:auto minmax(0,1fr) auto;gap:6px 14px;align-items:center;background:var(--panel);border:1px solid var(--line);border-radius:14px;padding:10px 14px}
+.gauge .big{font-family:var(--display);font-size:34px;line-height:.9;font-variant-numeric:tabular-nums}
+.bar{height:12px;border-radius:999px;background:var(--card);position:relative;overflow:hidden}
+.bar i{position:absolute;inset:0 auto 0 0;background:var(--green);border-radius:999px}
+.bar i.warn{background:var(--amber)}.bar i.full{background:var(--red)}
+.gauge .note{grid-column:1/-1;color:var(--muted);font-size:14px}
+.stats{display:flex;gap:14px;flex-wrap:wrap;font-size:14px;color:var(--muted)}
+.stats b{color:var(--cream);font-variant-numeric:tabular-nums}
+
+/* Corps */
+.main{display:grid;grid-template-columns:minmax(0,1fr) 380px;gap:16px;align-items:start}
+@media (max-width:1000px){.main{grid-template-columns:minmax(0,1fr)}}
+.planbox{background:var(--panel);border:1px solid var(--line);border-radius:16px;padding:10px;min-width:0}
+.planbar{display:flex;flex-wrap:wrap;gap:10px;align-items:center;justify-content:space-between;margin-bottom:8px}
+.tabs{display:flex;gap:6px}
+.tabs button{padding:7px 14px 3px;border-radius:10px;background:var(--card);border:1px solid var(--line);font-family:var(--display);font-size:21px;text-transform:uppercase;color:var(--muted)}
+.tabs button[aria-selected="true"]{border-color:var(--cream);color:var(--cream)}
+.timepick{display:flex;align-items:center;gap:8px;font-weight:600;white-space:nowrap}
+.timepick select{background:var(--card);border:1px solid var(--line);border-radius:10px;padding:6px 8px;font-variant-numeric:tabular-nums}
+.timepick button{padding:6px 10px;border-radius:10px;border:1px solid var(--line);background:var(--card);font-weight:700}
+svg.plan{width:100%;height:auto;display:block;touch-action:manipulation}
+#planWrap{overflow-x:auto;-webkit-overflow-scrolling:touch}
+@media (max-width:700px){svg.plan{width:880px;max-width:none}}
+.legend{display:flex;flex-wrap:wrap;gap:6px 16px;font-size:14px;color:var(--muted);margin-top:8px}
+.legend span{display:inline-flex;align-items:center;gap:6px}
+.legend i{width:14px;height:14px;border-radius:4px;display:inline-block;border:2px solid transparent}
+.lg-free{background:var(--tabletop);border-color:var(--chair)!important}
+.lg-resa{background:var(--red-soft);border-color:var(--red)!important}
+.lg-soon{background:var(--amber-soft);border-color:var(--amber)!important}
+.lg-in{background:var(--red)}
+.lg-sel{background:var(--green-soft);border-color:var(--green)!important}
+
+/* Tables SVG */
+.scen-wall{fill:none;stroke:var(--wall);stroke-width:10;stroke-linecap:square}
+.scen-fill{fill:var(--hatch);stroke:var(--line);stroke-width:3}
+.scen-terr{fill:var(--terrace);stroke:var(--line);stroke-width:3;stroke-dasharray:14 10}
+.scen-void{fill:url(#hatch);stroke:var(--wall);stroke-width:4}
+.scen-bar{fill:#3a2f2a;stroke:var(--wall);stroke-width:3}
+.scen-lbl{fill:var(--muted);font-family:var(--body);font-weight:700;font-size:30px;letter-spacing:.08em;text-transform:uppercase}
+.scen-lbl.sm{font-size:22px}
+.stool{fill:var(--chair);stroke:var(--line);stroke-width:2}
+.seam{stroke:var(--line);stroke-width:3;stroke-dasharray:6 6;pointer-events:none}
+.tbl{cursor:pointer}
+.tbl .top{fill:var(--tabletop);stroke:var(--chair);stroke-width:4}
+.tbl .chair{fill:var(--chair)}
+.tbl .num{fill:var(--cream);font-family:var(--display);font-size:46px;text-anchor:middle;dominant-baseline:central;pointer-events:none}
+.tbl .who{fill:var(--cream);font-family:var(--body);font-weight:700;font-size:21px;text-anchor:middle;pointer-events:none}
+.tbl .halo{fill:transparent}
+.tbl:hover .top{stroke:var(--cream)}
+.tbl.resa .top{fill:var(--red-soft);stroke:var(--red)}
+.tbl.soon .top{fill:var(--amber-soft);stroke:var(--amber)}
+.tbl.in .top{fill:var(--red);stroke:var(--red)}
+.tbl.in .chair{fill:#8a2a2e}
+.tbl.sel .top{fill:var(--green-soft);stroke:var(--green);stroke-width:7}
+.tbl.busy{opacity:.35;cursor:not-allowed}
+.tbl.focus .top{stroke:var(--cream);stroke-width:7}
+.tbl.haute .top{stroke-dasharray:10 6}
+
+/* Panneau */
+.side{background:var(--panel);border:1px solid var(--line);border-radius:16px;padding:14px;display:flex;flex-direction:column;gap:12px;min-width:0}
+.sideh{display:flex;align-items:center;gap:8px}
+.sideh h2{margin:0;font-size:30px;flex:1}
+.btn{display:inline-flex;align-items:center;justify-content:center;gap:6px;padding:10px 14px 6px;border-radius:11px;font-family:var(--display);font-size:21px;text-transform:uppercase}
+.btn.primary{background:var(--red);color:#fff}
+.btn.primary:disabled{background:var(--line);color:var(--muted);cursor:not-allowed}
+.btn.ghost{border:1px solid var(--line);background:var(--card)}
+.btn.sm{font-size:18px;padding:7px 10px 4px}
+.back{color:var(--muted);font-weight:700;text-align:left}
+.empty{color:var(--muted);text-align:center;padding:26px 8px;border:1px dashed var(--line);border-radius:12px}
+.rlist{display:flex;flex-direction:column;gap:6px}
+.rrow{display:grid;grid-template-columns:minmax(52px,auto) minmax(0,1fr) auto;gap:4px 10px;align-items:center;text-align:left;width:100%;padding:9px 10px;border-radius:11px;background:var(--card);border:1px solid var(--line)}
+.rrow:hover{border-color:var(--muted)}
+.rrow .t{font-family:var(--display);font-size:26px;line-height:.9;font-variant-numeric:tabular-nums}
+.rrow .n{font-weight:700;text-transform:uppercase;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.rrow .m{color:var(--muted);font-size:14px}
+.rrow.ended{opacity:.5}
+.pill{font-size:12px;font-weight:700;text-transform:uppercase;letter-spacing:.04em;padding:3px 7px;border-radius:6px;white-space:nowrap;background:var(--line)}
+.pill.confirmee{background:var(--red-soft);color:#ffc9cb}
+.pill.arrivee{background:var(--red);color:#fff}
+.pill.terminee{background:var(--line);color:var(--muted)}
+.pill.noshow{background:var(--amber-soft);color:var(--amber)}
+.pill.annulee{background:var(--line);color:var(--muted);text-decoration:line-through}
+.pill.demande{background:var(--amber);color:#1a1205}
+.pill.refusee{background:var(--line);color:var(--muted);text-decoration:line-through}
+.tag{font-size:11px;font-weight:700;text-transform:uppercase;padding:2px 6px;border-radius:5px;background:var(--card);border:1px solid var(--line);color:var(--muted);margin-left:4px}
+.pending{display:flex;flex-wrap:wrap;gap:8px;align-items:center;background:var(--amber-soft);border:1px solid var(--amber);color:#ffd99a;border-radius:12px;padding:10px 14px;font-weight:600}
+.pending button{color:#ffd99a;text-decoration:underline;font-weight:700}
+.login{position:fixed;inset:0;z-index:50;background:var(--bg);display:grid;place-items:center;padding:24px}
+.login .box{width:min(340px,100%);text-align:center}
+.login img{width:100px}
+.dots{display:flex;gap:12px;justify-content:center;margin:16px 0}
+.dots i{width:15px;height:15px;border-radius:50%;border:2px solid var(--muted)}
+.dots i.on{background:var(--red);border-color:var(--red)}
+.pad{display:grid;grid-template-columns:repeat(3,1fr);gap:10px}
+.pad button{height:62px;border-radius:14px;background:var(--card);border:1px solid var(--line);font-family:var(--display);font-size:32px}
+.lmsg{min-height:22px;color:#ffb6b9;font-weight:600;margin-top:10px}
+.navlinks{display:flex;gap:8px}
+.navlinks a{color:var(--muted);font-weight:700;text-decoration:none;border:1px solid var(--line);border-radius:10px;padding:6px 10px}
+.kv{display:grid;grid-template-columns:110px minmax(0,1fr);gap:6px 10px;font-size:16px}
+.kv dt{color:var(--muted)}
+.kv dd{margin:0;font-weight:600;overflow-wrap:anywhere}
+.acts{display:flex;flex-wrap:wrap;gap:6px}
+.copy{margin-left:6px;font-size:13px;color:var(--muted);text-decoration:underline}
+form{display:flex;flex-direction:column;gap:10px}
+.fg{display:flex;flex-direction:column;gap:4px}
+.fg label{font-size:14px;color:var(--muted);font-weight:600}
+.frow{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:8px}
+.frow2{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:8px}
+input[type=text],input[type=tel],input[type=number],input[type=date],select,textarea{background:var(--card);border:1px solid var(--line);border-radius:10px;padding:9px 10px;width:100%;color-scheme:dark}
+textarea{min-height:56px;resize:vertical}
+.chips{display:flex;flex-wrap:wrap;gap:6px}
+.chip{display:inline-flex;align-items:center;gap:6px;padding:5px 9px;border-radius:999px;background:var(--green-soft);border:1px solid var(--green);font-weight:700}
+.chip button{color:var(--muted);font-size:15px}
+.sugg{display:flex;flex-direction:column;gap:6px}
+.sugg button{display:flex;justify-content:space-between;gap:8px;text-align:left;padding:8px 10px;border-radius:10px;border:1px solid var(--line);background:var(--card)}
+.sugg button:hover{border-color:var(--green)}
+.sugg b{font-weight:700}
+.msg{border-radius:10px;padding:8px 10px;font-weight:600;font-size:15px}
+.msg.err{background:rgba(227,35,43,.18);color:#ffc0c3}
+.msg.warn{background:var(--amber-soft);color:#ffd99a}
+.msg.info{background:var(--card);color:var(--muted)}
+.pickbar{position:fixed;left:0;right:0;bottom:0;z-index:20;padding:10px max(16px, env(safe-area-inset-right, 0px)) calc(10px + env(safe-area-inset-bottom, 0px)) max(16px, env(safe-area-inset-left, 0px));background:var(--panel);border-top:3px solid var(--green);display:flex;gap:12px;align-items:center;flex-wrap:wrap}
+.pickbar .txt{flex:1;min-width:200px;font-weight:600}
+.toast{position:fixed;left:50%;bottom:calc(24px + env(safe-area-inset-bottom, 0px));transform:translateX(-50%);background:var(--cream);color:#151210;padding:10px 16px;border-radius:999px;font-weight:700;z-index:30;opacity:0;transition:opacity .2s;pointer-events:none}
+.toast.on{opacity:1}
+.alerts{display:flex;flex-direction:column;gap:8px}
+.alerts:not(:empty){margin-bottom:12px}
+.al{display:flex;flex-wrap:wrap;gap:10px 14px;align-items:center;border-radius:12px;padding:10px 14px;border:2px solid var(--amber);background:var(--amber-soft);color:#ffe2ad}
+.al.now{border-color:var(--amber);background:rgba(233,165,58,.34)}
+.al.late{border-color:var(--red);background:rgba(227,35,43,.26);color:#ffd5d7;animation:pulse 1.6s ease-in-out infinite}
+@media (prefers-reduced-motion:reduce){.al.late{animation:none}}
+.al.ok{border-color:var(--green);background:var(--green-soft);color:#c9f0d6}
+.al .when{font-family:var(--display);font-size:30px;line-height:1;min-width:104px}
+.al .who{flex:1;min-width:200px;font-weight:600}
+.al .who b{font-size:17px}
+.al .who a{color:inherit;font-weight:700}
+.al .ab{display:flex;gap:8px;flex-wrap:wrap}
+.al button.x{background:rgba(0,0,0,.28);color:inherit;border:1px solid currentColor;border-radius:10px;padding:9px 14px;font-weight:700;font-size:15px;min-height:42px}
+.al button.go{background:var(--green);color:#06240f;border:0;border-radius:10px;padding:9px 16px;font-weight:800;font-size:15px;min-height:42px}
+@keyframes pulse{50%{background:rgba(227,35,43,.42)}}
+.tbl.late .top{fill:rgba(227,35,43,.5);stroke:var(--red);stroke-width:8;stroke-dasharray:16 9}
+.lg-late{background:rgba(227,35,43,.5);border:2px dashed var(--red)!important}
+.cd{display:inline-block;margin-left:6px;padding:1px 7px;border-radius:999px;font-size:12px;font-weight:800;background:var(--amber);color:#1a1205}
+.cd.late{background:var(--red);color:#fff}.cd.ok{background:var(--green);color:#06240f}
+.snd{border:1px solid var(--line);border-radius:999px;padding:6px 12px;font-weight:700;color:var(--muted)}
+.snd[aria-pressed="true"]{color:var(--cream);border-color:var(--green)}
+.banner{background:var(--amber-soft);color:#ffd99a;border-radius:12px;padding:10px 14px;font-weight:600}
+@media (prefers-reduced-motion:reduce){*{transition:none!important}}
+</style>
+</head>
+<body>
+<div class="login" id="login" hidden><div class="box"><img src="logo_on_dark.png" alt="BUFFALO"><h1 class="d" style="font-size:38px;margin:10px 0 4px">Réservations</h1><div class="muted">Code PIN équipe</div><div class="dots" id="dots"></div><div class="pad" id="pad"></div><div class="lmsg" id="lmsg"></div></div></div>
+
+<div class="wrap">
+  <header class="top">
+    <div class="brand">
+      <img src="logo_on_dark.png" alt="BUFFALO Sports Bar">
+      <div><h1 class="d">Réservations</h1><div class="sub">RDC tables 100 · R+1 tables 200</div></div>
+    </div>
+    <div class="ctl">
+      <nav class="navlinks" aria-label="Écrans"><a href="equipe.html">Cuisine / bar</a><a href="fidelite.html">Fidélité</a></nav>
+      <div class="datenav"><button id="prevDay" aria-label="Jour précédent">‹</button><input type="date" id="dateIn" aria-label="Date"><button id="nextDay" aria-label="Jour suivant">›</button></div>
+      <button class="btn ghost sm" id="todayBtn">Aujourd'hui</button>
+      <div class="seg" role="group" aria-label="Service"><button data-svc="matin">Matin</button><button data-svc="midi">Midi</button><button data-svc="soir">Soir</button></div>
+      <button class="snd" id="sndBtn" aria-pressed="true">Son des alertes : oui</button>
+      <button class="match" id="matchBtn" aria-pressed="false"><span class="sw"></span>Soir de match</button>
+    </div>
+  </header>
+  <div id="banner"></div>
+  <div class="alerts" id="alerts" aria-live="assertive"></div>
+  <div id="pending"></div>
+  <section class="gauge" aria-label="Remplissage du service">
+    <div><div class="big" id="gNum">0 / 212</div><div class="muted" style="font-size:13px" id="gLbl">couverts réservés</div></div>
+    <div class="bar"><i id="gBar" style="width:0%"></i></div>
+    <div class="stats" id="gStats"></div>
+    <div class="note" id="gNote"></div>
+  </section>
+
+  <div class="main">
+    <section class="planbox" aria-label="Plan">
+      <div class="planbar">
+        <div class="tabs" role="tablist"><button role="tab" data-zone="rdc">RDC · 100</button><button role="tab" data-zone="mez">R+1 · 200</button></div>
+        <div class="timepick"><label for="timeSel">Situation à</label><select id="timeSel"></select><button id="nowBtn">Maintenant</button></div>
+      </div>
+      <div id="planWrap"></div>
+      <div class="legend"><span><i class="lg-free"></i>Libre</span><span><i class="lg-soon"></i>Arrive dans moins de 45 min</span><span><i class="lg-late"></i>Client en retard</span><span><i class="lg-resa"></i>Réservée</span><span><i class="lg-in"></i>Clients installés</span><span><i class="lg-sel"></i>Sélection</span><span>Pointillés : table haute</span></div>
+    </section>
+    <aside class="side" id="side" aria-live="polite"></aside>
+  </div>
+</div>
+<div id="pickbar"></div>
+<div class="toast" id="toast"></div>
+
+<script>
+/* ===================== Plan (plan d'aménagement RDC / R+1 du 11/11/2026) ===================== */
+// k: d = carrée en losange (4), r = rectangle, o = ronde ; c = chaises [haut, bas, gauche, droite]
+const TABLES = [
+  // RDC (rez-de-chaussée) : plan d'aménagement du 11/11/2026
+  {n:100,z:"rdc",a:"RDC",x:1090,y:260,k:"r",w:74,h:148,c:[0,0,2,2],s:4},
+  {n:101,z:"rdc",a:"RDC",x:1310,y:260,k:"r",w:74,h:148,c:[0,0,2,2],s:4},
+  {n:102,z:"rdc",a:"RDC",x:1530,y:260,k:"r",w:74,h:148,c:[0,0,2,2],s:4},
+  {n:103,z:"rdc",a:"RDC",x:1750,y:260,k:"r",w:74,h:148,c:[0,0,2,2],s:4},
+  {n:104,z:"rdc",a:"RDC",x:1100,y:500,k:"r",w:148,h:74,c:[2,2,0,0],s:4},
+  {n:105,z:"rdc",a:"RDC",x:1400,y:500,k:"r",w:148,h:74,c:[2,2,0,0],s:4},
+  {n:106,z:"rdc",a:"RDC",x:1690,y:500,k:"r",w:74,h:74,c:[1,1,0,0],s:2},
+  {n:107,z:"rdc",a:"RDC",x:900,y:700,k:"r",w:74,h:74,c:[1,1,0,0],s:2},
+  {n:108,z:"rdc",a:"RDC",x:1270,y:700,k:"r",w:148,h:74,c:[2,2,0,0],s:4},
+  {n:109,z:"rdc",a:"RDC",x:1590,y:700,k:"r",w:74,h:74,c:[1,1,0,0],s:2},
+  {n:110,z:"rdc",a:"RDC",x:2200,y:890,k:"r",w:74,h:74,c:[1,1,0,0],s:2},
+  // R+1 (étage)
+  {n:200,z:"mez",a:"R+1",x:150,y:1130,k:"r",w:148,h:74,c:[2,2,0,0],s:4},
+  {n:201,z:"mez",a:"R+1",x:150,y:880,k:"r",w:148,h:74,c:[2,2,0,0],s:4},
+  {n:202,z:"mez",a:"R+1",x:300,y:760,k:"r",w:148,h:74,c:[0,2,1,1],s:4},
+  {n:203,z:"mez",a:"R+1",x:530,y:760,k:"r",w:74,h:74,c:[0,0,1,1],s:2},
+  {n:204,z:"mez",a:"R+1",x:640,y:890,k:"r",w:148,h:74,c:[2,2,0,0],s:4},
+  {n:205,z:"mez",a:"R+1",x:560,y:1110,k:"r",w:148,h:74,c:[2,2,0,0],s:4},
+  {n:206,z:"mez",a:"R+1",x:930,y:540,k:"r",w:222,h:74,c:[3,3,0,0],s:6},
+  {n:207,z:"mez",a:"R+1",x:900,y:300,k:"r",w:222,h:74,c:[3,3,0,0],s:6},
+  {n:208,z:"mez",a:"R+1",x:1290,y:380,k:"r",w:74,h:74,c:[0,0,1,1],s:2},
+  {n:209,z:"mez",a:"R+1",x:1300,y:560,k:"r",w:74,h:74,c:[0,0,1,1],s:2},
+  {n:210,z:"mez",a:"R+1",x:1480,y:800,k:"r",w:148,h:74,c:[2,2,0,0],s:4,rot:-40},
+  {n:211,z:"mez",a:"R+1",x:1760,y:870,k:"r",w:74,h:74,c:[1,1,0,0],s:2},
+  {n:212,z:"mez",a:"R+1",x:1980,y:980,k:"r",w:148,h:74,c:[2,2,0,0],s:4,rot:55},
+  {n:213,z:"mez",a:"R+1",x:2030,y:1360,k:"o",r:38,s:2,haute:true},
+  {n:214,z:"mez",a:"R+1",x:1840,y:1360,k:"o",r:38,s:2,haute:true},
+  {n:215,z:"mez",a:"R+1",x:690,y:1400,k:"o",r:38,s:2,haute:true},
+  {n:216,z:"mez",a:"R+1",x:540,y:1400,k:"o",r:38,s:2,haute:true},
+  {n:217,z:"mez",a:"R+1",x:270,y:1400,k:"o",r:38,s:2,haute:true},
+  {n:218,z:"mez",a:"R+1",x:120,y:1400,k:"o",r:38,s:2,haute:true},
+  {n:219,z:"mez",a:"R+1",x:420,y:110,k:"r",w:74,h:74,c:[0,0,1,1],s:2},
+];
+const TBY = Object.fromEntries(TABLES.map(t => [t.n, t]));
+const SEATS = TABLES.reduce((s,t) => s + t.s, 0);
+const MATCH_SHARE = 0.7; // soirs de match : 30 % des places gardées pour les clients sans réservation
+
+const SCENE = {
+  rdc: { vb: "0 0 2400 1400", svg: `
+    <text class="scen-lbl" x="250" y="90" text-anchor="middle">Entrée food court ↑</text>
+    <rect class="scen-fill" x="40" y="380" width="90" height="440"/>
+    <text class="scen-lbl sm" x="85" y="600" text-anchor="middle" transform="rotate(-90 85 600)">WC · escalier</text>
+    <rect class="scen-fill" x="40" y="930" width="230" height="410"/>
+    <text class="scen-lbl sm" x="155" y="1140" text-anchor="middle" transform="rotate(-90 155 1140)">Réserve bar</text>
+    <rect class="scen-fill" x="850" y="30" width="1010" height="120"/>
+    <text class="scen-lbl" x="1355" y="102" text-anchor="middle">Escalier vers R+1</text>
+    <rect class="scen-bar" x="680" y="930" width="1220" height="80" rx="6"/>
+    <rect class="scen-bar" x="1820" y="930" width="80" height="410"/>
+    <rect class="scen-bar" x="680" y="930" width="60" height="170"/>
+    <text class="scen-lbl" x="1280" y="1190" text-anchor="middle">Bar</text>
+    ${[2010,2120,2230].map(x => `<rect class="scen-fill" x="${x}" y="1260" width="70" height="80"/>`).join("")}
+    <text class="scen-lbl sm" x="2150" y="1230" text-anchor="middle">Fléchettes</text>
+    <text class="scen-lbl sm" x="2300" y="560" text-anchor="middle" transform="rotate(90 2300 560)">Entrée parking →</text>
+    <path class="scen-wall" d="M420 20 H2360 V60 M2360 330 V1340 H40 V20 H120"/>
+  `},
+  mez: { vb: "0 -20 2340 1540", svg: `
+    <defs><pattern id="hatch" width="22" height="22" patternUnits="userSpaceOnUse" patternTransform="rotate(45)"><rect width="22" height="22" fill="var(--bg)"/><line x1="0" y1="0" x2="0" y2="22" stroke="var(--line)" stroke-width="6"/></pattern></defs>
+    <path class="scen-void" d="M1680 160 L1520 160 Q1400 200 1400 400 Q1400 620 1600 720 Q1900 800 2050 850 Q2130 910 2130 1040 L2320 1040 L2320 -10 L1920 -10 L1920 160 Z"/>
+    <text class="scen-lbl" x="1950" y="560" text-anchor="middle">Vide sur RDC</text>
+    <rect class="scen-fill" x="1680" y="-10" width="240" height="170"/>
+    <text class="scen-lbl sm" x="1800" y="85" text-anchor="middle">Escalier</text>
+    <rect class="scen-bar" x="660" y="40" width="720" height="26"/>
+    <text class="scen-lbl sm" x="1020" y="115" text-anchor="middle">Tablette · tabourets sans résa</text>
+    <rect class="scen-fill" x="40" y="80" width="100" height="290"/>
+    <text class="scen-lbl sm" x="90" y="225" text-anchor="middle" transform="rotate(-90 90 225)">Fléchettes</text>
+    <rect class="scen-fill" x="40" y="400" width="510" height="310"/>
+    <text class="scen-lbl" x="295" y="570" text-anchor="middle">Escalier</text>
+    <rect class="scen-bar" x="940" y="1150" width="790" height="80" rx="6"/>
+    <rect class="scen-bar" x="1650" y="1150" width="80" height="330"/>
+    <rect class="scen-bar" x="940" y="1150" width="60" height="110"/>
+    <text class="scen-lbl" x="1300" y="1340" text-anchor="middle">Bar</text>
+    <rect class="scen-fill" x="340" y="1330" width="90" height="150"/>
+    <rect class="scen-fill" x="770" y="1330" width="90" height="150"/>
+    <rect class="scen-fill" x="2130" y="1040" width="170" height="440"/>
+    <text class="scen-lbl sm" x="2215" y="1260" text-anchor="middle" transform="rotate(-90 2215 1260)">Bureau</text>
+    <path class="scen-wall" d="M1680 40 H20 V1490 H2300 V1040"/>
+  `}
+};
+
+/* ===================== Outils ===================== */
+const $ = (s, el=document) => el.querySelector(s);
+const esc = s => String(s ?? "").replace(/[&<>"']/g, c => ({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c]));
+const pad = n => String(n).padStart(2, "0");
+const toMin = t => { const [h,m] = String(t).split(":").map(Number); return h*60 + m; };
+const fromMin = m => pad(Math.floor(m/60) % 24) + ":" + pad(m % 60);
+function todayNC(){ return new Intl.DateTimeFormat("en-CA", { timeZone: "Pacific/Noumea" }).format(new Date()); }
+function nowMinNC(){ const p = new Intl.DateTimeFormat("en-GB", { timeZone:"Pacific/Noumea", hour:"2-digit", minute:"2-digit", hour12:false }).format(new Date()).split(":").map(Number); return p[0]*60 + p[1]; }
+function addDays(d, k){ const x = new Date(d + "T12:00:00Z"); x.setUTCDate(x.getUTCDate() + k); return x.toISOString().slice(0,10); }
+function dayLabel(d){ return new Date(d + "T12:00:00Z").toLocaleDateString("fr-FR", { weekday:"long", day:"numeric", month:"long", timeZone:"UTC" }); }
+const SERVICES = { matin:{lbl:"Matin", from:8*60, to:11*60, def:"09:00"}, midi:{lbl:"Midi", from:11*60, to:16*60, def:"12:00"}, soir:{lbl:"Soir", from:16*60, to:24*60, def:"19:30"} };
+function svcOf(time){ const m = toMin(time); return m < 11*60 ? "matin" : m < 16*60 ? "midi" : "soir"; }
+const ACTIVE = ["confirmee","arrivee"];
+const STATUS_LBL = { demande:"À valider", confirmee:"Confirmée", arrivee:"Arrivé", terminee:"Partis", noshow:"Pas venu", annulee:"Annulée", refusee:"Refusée" };
+const store = { get(k){ try { return localStorage.getItem(k); } catch(e) { return null; } }, set(k,v){ try { localStorage.setItem(k,v); } catch(e) {} } };
+function toast(m){ const t = $("#toast"); t.textContent = m; t.classList.add("on"); clearTimeout(t._h); t._h = setTimeout(() => t.classList.remove("on"), 1800); }
+const seatsOf = list => list.reduce((s,n) => s + (TBY[n]?.s || 0), 0);
+// Une table de 4 (hors table haute) peut passer en table de 6 : 2 chaises ajoutées en bout.
+const canExt = n => { const t = TBY[n]; return !!t && t.s === 4 && !t.haute; };
+const maxSeatsOf = list => list.reduce((s,n) => s + (TBY[n]?.s || 0) + (canExt(n) ? 2 : 0), 0);
+function extOf(r){ // tables de 4 à passer en 6 pour cette réservation
+  const tb = r.tables || []; let miss = (+r.covers || 0) - seatsOf(tb); const out = [];
+  for (const n of tb) { if (miss <= 0) break; if (canExt(n)) { out.push(n); miss -= 2; } }
+  return miss <= 0 ? out : (out.length ? out : []);
+}
+const tlabelX = r => { const ex = extOf(r); return (r.tables || []).length ? r.tables.map(n => "T" + n + (ex.includes(n) ? " en 6" : "")).join(" + ") : "à placer"; };
+const tlabel = list => list.length ? list.map(n => "T" + n).join(" + ") : "à placer";
+
+/* ===================== État ===================== */
+const S = {
+  date: todayNC(), svc: "soir", time: "19:30", zone: store.get("plan_zone") || "rdc",
+  resas: [], day: {}, mode: "list", sel: null, tableN: null,
+  draft: null, picking: false, db: null, loaded: false, confirmDel: false,
+};
+(function initTime(){
+  const m = nowMinNC(), svc = m < 11*60 ? "matin" : m < 16*60 ? "midi" : "soir";
+  S.svc = svc; S.time = (m >= SERVICES[svc].from && m < SERVICES[svc].to) ? fromMin(m - m % 15) : SERVICES[svc].def;
+})();
+
+function interval(r){ const s = toMin(r.time); return [s, s + (Number(r.dur) || 120)]; }
+function overlaps(a, b){ return a[0] < b[1] && b[0] < a[1]; }
+function busyFor(iv, exceptId){
+  const busy = new Map();
+  for (const r of S.resas) if (ACTIVE.includes(r.status) && r.id !== exceptId && overlaps(iv, interval(r))) for (const n of (r.tables || [])) busy.set(n, r);
+  return busy;
+}
+function tableState(n){
+  const t = toMin(S.time); let best = null;
+  for (const r of S.resas) {
+    if (!ACTIVE.includes(r.status) || !(r.tables || []).includes(n)) continue;
+    const [a, b] = interval(r);
+    if (t >= a && t < b) return { cls: r.status === "arrivee" ? "in" : (alertOf(r)?.lvl === "late" ? "late" : "resa"), r };
+    if (t < a && a - t <= 45 && !best) best = { cls: "soon", r };
+  }
+  return best || { cls: "", r: null };
+}
+
+/* ===================== Dessin du plan ===================== */
+function chairRect(cx, cy, w, h){ return `<rect class="chair" x="${cx - w/2}" y="${cy - h/2}" width="${w}" height="${h}" rx="5"/>`; }
+function drawTable(t, cls, label, ext){
+  const CW = 30, CD = 22, G = 6; let g = "";
+  if (ext && t.k === "r") { const c = [...t.c]; if (t.w >= t.h) { c[2] = Math.max(c[2], 1); c[3] = Math.max(c[3], 1); } else { c[0] = Math.max(c[0], 1); c[1] = Math.max(c[1], 1); } t = { ...t, c }; }
+  if (t.k === "d") {
+    const S2 = 74;
+    g += `<g transform="rotate(45 ${t.x} ${t.y})">`;
+    g += chairRect(t.x, t.y - S2/2 - G - CD/2, CW+8, CD) + chairRect(t.x, t.y + S2/2 + G + CD/2, CW+8, CD) + chairRect(t.x - S2/2 - G - CD/2, t.y, CD, CW+8) + chairRect(t.x + S2/2 + G + CD/2, t.y, CD, CW+8);
+    g += `<rect class="top" x="${t.x - S2/2}" y="${t.y - S2/2}" width="${S2}" height="${S2}" rx="4"/></g>`;
+  } else if (t.k === "o") {
+    for (let i = 0; i < (t.haute ? 0 : t.s); i++) { const a = (i / t.s) * 2 * Math.PI - Math.PI/2, R = t.r + G + CD/2;
+      g += `<rect class="chair" x="${t.x + R*Math.cos(a) - CW/2}" y="${t.y + R*Math.sin(a) - CD/2}" width="${CW}" height="${CD}" rx="5" transform="rotate(${a*180/Math.PI + 90} ${t.x + R*Math.cos(a)} ${t.y + R*Math.sin(a)})"/>`; }
+    g += `<circle class="top" cx="${t.x}" cy="${t.y}" r="${t.r}"/>`;
+  } else {
+    const [ct, cb, cl, cr] = t.c, x0 = t.x - t.w/2, y0 = t.y - t.h/2;
+    for (let i = 0; i < ct; i++) g += chairRect(x0 + t.w*(i+.5)/ct, y0 - G - CD/2, CW, CD);
+    for (let i = 0; i < cb; i++) g += chairRect(x0 + t.w*(i+.5)/cb, y0 + t.h + G + CD/2, CW, CD);
+    for (let i = 0; i < cl; i++) g += chairRect(x0 - G - CD/2, y0 + t.h*(i+.5)/cl, CD, CW);
+    for (let i = 0; i < cr; i++) g += chairRect(x0 + t.w + G + CD/2, y0 + t.h*(i+.5)/cr, CD, CW);
+    g += `<rect class="top" x="${x0}" y="${y0}" width="${t.w}" height="${t.h}" rx="4"/>`;
+    if (t.w > 74 || t.h > 74) for (let i = 1; i < Math.round(Math.max(t.w, t.h) / 74); i++) g += t.w > t.h ? `<line class="seam" x1="${x0 + 74*i}" y1="${y0 + 8}" x2="${x0 + 74*i}" y2="${y0 + t.h - 8}"/>` : `<line class="seam" x1="${x0 + 8}" y1="${y0 + 74*i}" x2="${x0 + t.w - 8}" y2="${y0 + 74*i}"/>`;
+    if (t.rot) g = `<g transform="rotate(${t.rot} ${t.x} ${t.y})">${g}</g>`;
+  }
+  const big = (t.k === "r" && Math.min(t.w, t.h) < 80 && Math.max(t.w, t.h) < 80) || (t.k === "o" && t.r < 50);
+  const ny = label ? t.y - 10 : t.y;
+  g += `<circle class="halo" cx="${t.x}" cy="${t.y}" r="70"/>`;
+  g += `<text class="num" x="${t.x}" y="${ny}" style="${big ? "font-size:36px" : ""}">${t.n}</text>`;
+  if (label) g += `<text class="who" x="${t.x}" y="${t.y + 30}">${esc(label)}</text>`;
+  return `<g class="tbl ${cls} ${t.haute ? "haute" : ""}" data-n="${t.n}" role="button" tabindex="0" aria-label="Table ${t.n}, ${t.s} places${t.haute ? ", haute" : ""}">${g}</g>`;
+}
+function renderPlan(){
+  const sc = SCENE[S.zone];
+  const pickIv = S.picking ? interval(S.draft) : null;
+  const busy = pickIv ? busyFor(pickIv, S.draft.id) : null;
+  let tables = "";
+  for (const t of TABLES.filter(t => t.z === S.zone)) {
+    let cls = "", label = "", ext = false;
+    if (S.picking) {
+      if (S.draft.tables.includes(t.n)) { cls = "sel"; ext = extOf(S.draft).includes(t.n); }
+      else if (busy.has(t.n)) cls = "busy";
+      label = (ext ? 6 : t.s) + " pl.";
+    } else {
+      const st = tableState(t.n); cls = st.cls;
+      label = st.r ? (st.r.name || "").split(" ")[0].slice(0, 9) + " · " + st.r.covers : "";
+      ext = !!st.r && extOf(st.r).includes(t.n);
+      if (S.mode === "table" && S.tableN === t.n) cls += " focus";
+      if (S.mode === "detail" && S.sel && (S.resas.find(r => r.id === S.sel)?.tables || []).includes(t.n)) cls += " focus";
+    }
+    tables += drawTable(t, cls, label, ext);
+  }
+  $("#planWrap").innerHTML = `<svg class="plan" viewBox="${sc.vb}" role="img" aria-label="Plan ${S.zone === "rdc" ? "RDC" : "R+1"}">${sc.svg}${tables}</svg>`;
+  $("#planWrap").querySelectorAll(".tbl").forEach(el => {
+    const go = () => onTable(+el.dataset.n);
+    el.addEventListener("click", go);
+    el.addEventListener("keydown", e => { if (e.key === "Enter" || e.key === " ") { e.preventDefault(); go(); } });
+  });
+  document.querySelectorAll("[data-zone]").forEach(b => b.setAttribute("aria-selected", b.dataset.zone === S.zone));
+}
+function onTable(n){
+  if (S.picking) {
+    const iv = interval(S.draft), busy = busyFor(iv, S.draft.id);
+    if (busy.has(n)) { const r = busy.get(n); toast(`T${n} est prise par ${r.name} (${r.time})`); return; }
+    const i = S.draft.tables.indexOf(n);
+    if (i >= 0) S.draft.tables.splice(i, 1); else S.draft.tables.push(n);
+    renderPlan(); renderPickbar(); return;
+  }
+  S.mode = "table"; S.tableN = n; renderAll();
+}
+
+/* ===================== Alertes d'arrivée ===================== */
+// 30 min avant : préparer la table. 15 min avant : arrivée imminente. 10 min après l'heure : client en retard.
+const PREP_MIN = 30, SOON_MIN = 15, LATE_MIN = 10;
+function alertOf(r){
+  if (r.status !== "confirmee" || r.date !== todayNC()) return null;
+  const d = toMin(r.time) - nowMinNC();           // minutes avant l'arrivée (négatif = heure dépassée)
+  if (d > PREP_MIN || d < -240) return null;
+  const lvl = d <= -LATE_MIN ? "late" : d <= 0 ? "now" : d <= SOON_MIN ? "soon" : "prep";
+  return { lvl, d };
+}
+function cdBadge(r){
+  const a = alertOf(r); if (!a) return "";
+  if (a.lvl === "late") return `<span class="cd late">retard ${-a.d} min</span>`;
+  if (a.lvl === "now") return `<span class="cd">attendu maintenant</span>`;
+  return `<span class="cd ${r.prete ? "ok" : ""}">dans ${a.d} min${r.prete ? " · table prête" : ""}</span>`;
+}
+let audioCtx = null, soundOn = store.get("plan_son") !== "0";
+function beep(late){
+  if (!soundOn) return;
+  try { audioCtx = audioCtx || new (window.AudioContext || window.webkitAudioContext)(); if (audioCtx.state === "suspended") audioCtx.resume();
+    const t0 = audioCtx.currentTime; (late ? [0, .22, .44] : [0, .25]).forEach((dt, i) => { const o = audioCtx.createOscillator(), g = audioCtx.createGain();
+      o.type = "sine"; o.frequency.value = late ? 880 : (i ? 784 : 587); g.gain.setValueAtTime(.0001, t0 + dt); g.gain.exponentialRampToValueAtTime(.25, t0 + dt + .02); g.gain.exponentialRampToValueAtTime(.0001, t0 + dt + .18);
+      o.connect(g); g.connect(audioCtx.destination); o.start(t0 + dt); o.stop(t0 + dt + .2); }); } catch(e) {}
+}
+const rung = new Map(); // id -> dernier palier déjà sonné
+function renderAlerts(){
+  const el = $("#alerts"); if (!el) return;
+  const rank = { prep:1, soon:2, now:3, late:4 };
+  const list = (S.today || []).map(r => ({ r, a: alertOf(r) })).filter(x => x.a).sort((x,y) => x.a.d - y.a.d);
+  let ring = 0;
+  for (const { r, a } of list) { const prev = rung.get(r.id) || 0, quiet = r.prete && a.lvl !== "late"; if (rank[a.lvl] > prev) { rung.set(r.id, rank[a.lvl]); if (!quiet) ring = Math.max(ring, a.lvl === "late" ? 2 : 1); } }
+  if (ring && S.alertsReady) beep(ring === 2);
+  S.alertsReady = true;
+  el.innerHTML = list.map(({ r, a }) => {
+    const tb = tlabelX(r), tel = r.phone ? `<a href="tel:${esc(String(r.phone).replace(/[^+\d]/g, ""))}">${esc(r.phone)}</a>` : "pas de téléphone";
+    if (a.lvl === "late") return `<div class="al late" role="alert"><span class="when">+ ${-a.d} min</span><span class="who"><b>${esc(r.name)}</b> n'est pas arrivé · prévu à ${esc(r.time)} · ${r.covers} pers. · ${tb}<br>Appeler : ${tel}</span>
+      <span class="ab"><button class="go" data-al-ok="${esc(r.id)}">OK, client arrivé</button><button class="x" data-al-no="${esc(r.id)}">Pas venu : libérer la table</button></span></div>`;
+    const ok = r.prete && a.lvl !== "now";
+    return `<div class="al ${ok ? "ok" : a.lvl}" role="status"><span class="when">${a.lvl === "now" ? "Maintenant" : a.d + " min"}</span><span class="who"><b>${esc(r.name)}</b> ${a.lvl === "now" ? "est attendu" : "arrive"} à ${esc(r.time)} · ${r.covers} pers. · ${tb}${extOf(r).length ? " · ajouter 2 chaises" : ""}${r.note ? " · " + esc(r.note) : ""}<br>${r.prete ? "Table prête ✓" : "Préparer la table"}</span>
+      <span class="ab">${r.prete ? "" : `<button class="x" data-al-pr="${esc(r.id)}">Table prête</button>`}<button class="go" data-al-ok="${esc(r.id)}">OK, client arrivé</button></span></div>`;
+  }).join("");
+  el.querySelectorAll("[data-al-ok]").forEach(b => b.onclick = () => quick(b.dataset.alOk, "arrivee", "Client arrivé"));
+  el.querySelectorAll("[data-al-no]").forEach(b => b.onclick = () => { if (b.dataset.sure !== "1") { b.dataset.sure = "1"; b.textContent = "Confirmer : pas venu"; return; } quick(b.dataset.alNo, "noshow", "Table libérée"); });
+  el.querySelectorAll("[data-al-pr]").forEach(b => b.onclick = () => setPrete(b.dataset.alPr));
+}
+async function quick(id, st, msg){ if (await act(() => rpc("staff_resa_status", { p_pin: S.pin, p_id: id, p_status: st }), msg)) { await loadToday(); await loadDay(); } }
+async function setPrete(id){ if (await act(() => rpc("staff_resa_prete", { p_pin: S.pin, p_id: id, p_prete: true }), "Table prête")) { await loadToday(); await loadDay(); } }
+let todayT = null;
+async function loadToday(){
+  clearTimeout(todayT); if (!S.pin) return;
+  try { const d = await rpc("staff_resas", { p_pin: S.pin, p_date: todayNC() }); if (d) { S.today = d.resas; renderAlerts(); } } catch(e) {}
+  todayT = setTimeout(loadToday, 30000);
+}
+
+/* ===================== Jauge et en-tête ===================== */
+function svcResas(){ return S.resas.filter(r => svcOf(r.time) === S.svc); }
+function renderHeader(){
+  $("#dateIn").value = S.date;
+  document.querySelectorAll("[data-svc]").forEach(b => b.setAttribute("aria-pressed", b.dataset.svc === S.svc));
+  $("#matchBtn").setAttribute("aria-pressed", !!S.day.match);
+  const list = svcResas(), counted = list.filter(r => ["demande","confirmee","arrivee","terminee"].includes(r.status));
+  const cov = counted.reduce((s,r) => s + (+r.covers || 0), 0);
+  const cap = S.day.match ? Math.round(SEATS * MATCH_SHARE) : SEATS;
+  const pct = Math.min(100, Math.round(cov / cap * 100));
+  $("#gNum").textContent = `${cov} / ${cap}`;
+  $("#gLbl").textContent = `couverts réservés · ${SERVICES[S.svc].lbl.toLowerCase()} du ${dayLabel(S.date)}`;
+  const bar = $("#gBar"); bar.style.width = pct + "%"; bar.className = pct >= 100 ? "full" : pct >= 85 ? "warn" : "";
+  const n = st => list.filter(r => r.status === st).length;
+  $("#gStats").innerHTML = `<span><b>${list.filter(r => !["annulee","refusee"].includes(r.status)).length}</b> résas</span><span><b>${n("demande")}</b> à valider</span><span><b>${n("arrivee")}</b> installées</span><span><b>${n("noshow")}</b> no-show</span>`;
+  $("#gNote").textContent = S.day.match
+    ? `Soir de match : réservations plafonnées à ${cap} places sur ${SEATS} pour garder environ 30 % de la salle, le comptoir et les tables hautes aux clients sans réservation.`
+    : `${SEATS} places réservables : RDC tables 100 à 110, R+1 tables 200 à 219 (dont 213 à 218 en tables hautes). Comptoirs, tablettes et tabourets restent libres pour les clients sans réservation.`;
+  const ts = $("#timeSel"), sv = SERVICES[S.svc]; let opts = "";
+  for (let m = sv.from; m < sv.to; m += 15) opts += `<option ${fromMin(m) === S.time ? "selected" : ""}>${fromMin(m)}</option>`;
+  ts.innerHTML = opts;
+  if (!ts.value || toMin(S.time) < sv.from || toMin(S.time) >= sv.to) { S.time = sv.def; ts.value = sv.def; }
+}
+
+/* ===================== Panneau latéral ===================== */
+function rowHtml(r){
+  const ended = ["terminee","noshow","annulee","refusee"].includes(r.status);
+  return `<button class="rrow ${ended ? "ended" : ""}" data-r="${esc(r.id)}"><span class="t">${esc(r.time)}</span>
+    <span style="min-width:0"><div class="n">${esc(r.name)}</div><div class="m">${r.covers} pers. · ${tlabelX(r)}${cdBadge(r)}${r.note ? " · ⚑" : ""}${r.source === "en_ligne" ? '<span class="tag">en ligne</span>' : ""}${r.fidelite ? '<span class="tag">fidélité</span>' : ""}</div></span>
+    <span class="pill ${r.status}">${STATUS_LBL[r.status] || r.status}</span></button>`;
+}
+function bindRows(el){ el.querySelectorAll("[data-r]").forEach(b => b.onclick = () => { S.mode = "detail"; S.sel = b.dataset.r; S.confirmDel = false; const r = S.resas.find(x => x.id === S.sel); if (r?.tables?.length && TBY[r.tables[0]].z !== S.zone) { S.zone = TBY[r.tables[0]].z; } renderAll(); }); }
+
+function renderSide(){
+  const side = $("#side");
+  if (S.mode === "form") { if (!side.querySelector("form")) renderForm(); else renderFormTables(); return; }
+  if (S.mode === "detail") {
+    const r = S.resas.find(x => x.id === S.sel);
+    if (!r) { S.mode = "list"; return renderSide(); }
+    const [a, b] = interval(r), seats = seatsOf(r.tables || []);
+    side.innerHTML = `<button class="back" id="back">‹ Toutes les réservations</button>
+      <div class="sideh"><h2 class="d">${esc(r.name)}</h2><span class="pill ${r.status}">${STATUS_LBL[r.status]}</span></div>
+      <dl class="kv">
+        <dt>Référence</dt><dd>${esc(r.ref || "")} · ${r.source === "en_ligne" ? "réservée en ligne" : "saisie par l'équipe"}${r.fidelite ? " · carte fidélité" : ""}</dd>
+        <dt>Date</dt><dd style="text-transform:capitalize">${dayLabel(r.date)}</dd>
+        <dt>Horaire</dt><dd>${esc(r.time)} → ${fromMin(b)}${cdBadge(r)}</dd>
+        <dt>Couverts</dt><dd>${r.covers} personnes</dd>
+        <dt>Tables</dt><dd>${tlabelX(r)}${seats ? ` · ${seats + 2 * extOf(r).length} places` : ""}${seats && maxSeatsOf(r.tables) < r.covers ? ' <span class="pill noshow">trop petit</span>' : ""}${extOf(r).length ? `<div class="muted" style="font-size:13px">Ajouter 2 chaises en bout de table ${extOf(r).map(n => "T" + n).join(", ")}.</div>` : ""}</dd>
+        <dt>Téléphone</dt><dd>${r.phone ? `<span id="ph">${esc(r.phone)}</span><button class="copy" id="cp">copier</button>` : "—"}</dd>
+        ${r.email ? `<dt>E-mail</dt><dd>${esc(r.email)}</dd>` : ""}
+        ${(r.sms || []).length ? `<dt>SMS</dt><dd>${r.sms.map(m => `${{confirmation:"Confirmation",demande:"Demande reçue",refus:"Refus",annulation:"Annulation",rappel:"Rappel"}[m.kind] || m.kind} : ${{envoye:"envoyé",simule:"simulé (pas encore de compte SMS)",echec:"échec" + (m.error ? " (" + esc(m.error) + ")" : ""),a_envoyer:"en attente",envoi:"en cours"}[m.status] || m.status} à ${new Date(m.at).toLocaleTimeString("fr-FR", { hour:"2-digit", minute:"2-digit", timeZone:"Pacific/Noumea" })}`).join("<br>")}</dd>` : ""}
+        ${r.note ? `<dt>Note</dt><dd>${esc(r.note)}</dd>` : ""}
+      </dl>
+      <div class="acts">
+        ${r.status === "demande" ? (r.tables?.length ? `<button class="btn primary sm" data-st="confirmee">Confirmer</button>` : `<button class="btn primary sm" id="assign">Attribuer une table</button>`) + `<button class="btn ghost sm" data-st="refusee">Refuser</button>` : ""}
+        ${r.status === "confirmee" ? `<button class="btn primary sm" data-st="arrivee">Client arrivé</button>${r.prete ? "" : `<button class="btn ghost sm" id="prete">Table prête</button>`}<button class="btn ghost sm" data-st="noshow">Pas venu</button><button class="btn ghost sm" data-st="annulee">Annuler</button>` : ""}
+        ${r.status === "arrivee" ? `<button class="btn primary sm" data-st="terminee">Table libérée</button>` : ""}
+        ${["terminee","noshow","annulee","refusee"].includes(r.status) ? `<button class="btn ghost sm" data-st="confirmee">Rétablir</button>` : ""}
+        <button class="btn ghost sm" id="edit">Modifier</button>
+        <button class="btn ghost sm" id="del">${S.confirmDel ? "Confirmer la suppression" : "Supprimer"}</button>
+      </div>`;
+    $("#back").onclick = () => { S.mode = "list"; renderAll(); };
+    side.querySelectorAll("[data-st]").forEach(b => b.onclick = () => setStatus(r, b.dataset.st));
+    $("#edit").onclick = () => openForm({ ...r, tables: [...(r.tables || [])] });
+    const pr = $("#prete"); if (pr) pr.onclick = () => setPrete(r.id);
+    const asg = $("#assign"); if (asg) asg.onclick = () => openForm({ ...r, tables: [], status: "confirmee" });
+    $("#del").onclick = async () => { if (!S.confirmDel) { S.confirmDel = true; renderSide(); return; } if (await act(() => rpc("staff_resa_delete", { p_pin: S.pin, p_id: r.id }), "Réservation supprimée")) { S.mode = "list"; await loadDay(); } };
+    const cp = $("#cp"); if (cp) cp.onclick = async () => { try { await navigator.clipboard.writeText(r.phone); toast("Numéro copié"); } catch(e) { const rg = document.createRange(); rg.selectNodeContents($("#ph")); getSelection().removeAllRanges(); getSelection().addRange(rg); } };
+    return;
+  }
+  if (S.mode === "table") {
+    const t = TBY[S.tableN], list = S.resas.filter(r => (r.tables || []).includes(t.n)).sort((a,b) => a.time.localeCompare(b.time));
+    const st = tableState(t.n);
+    side.innerHTML = `<button class="back" id="back">‹ Toutes les réservations</button>
+      <div class="sideh"><h2 class="d">Table ${t.n}</h2></div>
+      <div class="muted">${t.a} · ${t.s} places${t.haute ? " · table haute (mange-debout)" : ""}${t.k === "d" ? " · carrée" : t.k === "o" ? " · ronde" : ""}</div>
+      <div class="msg info">À ${S.time} : ${st.r ? `${st.cls === "in" ? "occupée par" : st.cls === "soon" ? "attendue à " + esc(st.r.time) + " pour" : "réservée pour"} <b>${esc(st.r.name)}</b> (${st.r.covers} pers.)` : "libre"}</div>
+      <div class="rlist">${list.length ? list.map(rowHtml).join("") : `<div class="empty">Aucune réservation sur cette table le ${dayLabel(S.date)}.</div>`}</div>
+      <button class="btn primary" id="bookT">Réserver la table ${t.n}</button>`;
+    $("#back").onclick = () => { S.mode = "list"; renderAll(); };
+    bindRows(side);
+    $("#bookT").onclick = () => openForm({ tables: [t.n], covers: Math.min(t.s, 4) });
+    return;
+  }
+  const list = svcResas().sort((a,b) => a.time.localeCompare(b.time) || a.name.localeCompare(b.name));
+  side.innerHTML = `<div class="sideh"><h2 class="d">${SERVICES[S.svc].lbl}</h2><button class="btn primary sm" id="newR">+ Réservation</button></div>
+    ${!S.loaded ? `<div class="empty">Chargement des réservations…</div>` : list.length ? `<div class="rlist">${list.map(rowHtml).join("")}</div>`
+      : `<div class="empty">Aucune réservation pour ce service.<br>Ajoutez la première avec « + Réservation », ou touchez une table sur le plan.</div>`}`;
+  bindRows(side);
+  $("#newR").onclick = () => openForm({});
+}
+
+async function setStatus(r, st){ if (await act(() => rpc("staff_resa_status", { p_pin: S.pin, p_id: r.id, p_status: st }), STATUS_LBL[st])) await loadDay(); }
+async function act(fn, ok){
+  try { const r = await fn(); if (r === null) { logout(); return false; } if (ok) toast(ok); return true; }
+  catch(e) { toast(e.message || "Enregistrement impossible, réessayez."); return false; }
+}
+
+/* ===================== Formulaire ===================== */
+function openForm(init){
+  const svcDefTime = toMin(S.time) >= SERVICES[S.svc].from ? S.time : SERVICES[S.svc].def;
+  const nm = String(init.name || "").trim(), sp = nm.indexOf(" ");
+  S.draft = { id: init.id || null, first: init.first ?? (sp > 0 ? nm.slice(0, sp) : ""), last: init.last ?? (sp > 0 ? nm.slice(sp + 1) : nm), name: nm, phone: init.phone || "", covers: +init.covers || 2,
+    date: init.date || S.date, time: init.time || svcDefTime, dur: +init.dur || (S.day.match ? 150 : 120),
+    note: init.note || "", tables: init.tables || [], status: init.status || "confirmee", pref: "any", createdAt: init.createdAt || null };
+  S.mode = "form"; S.picking = false; $("#side").innerHTML = ""; renderAll();
+}
+function renderForm(){
+  const d = S.draft, side = $("#side");
+  let times = ""; for (let m = 8*60; m < 24*60; m += 15) times += `<option ${fromMin(m) === d.time ? "selected" : ""}>${fromMin(m)}</option>`;
+  side.innerHTML = `<button class="back" id="back">‹ Retour</button>
+    <div class="sideh"><h2 class="d">${d.id ? "Modifier la réservation" : "Nouvelle réservation"}</h2></div>
+    <form id="fm" novalidate>
+      <div class="frow2">
+        <div class="fg"><label for="f-first">Prénom</label><input type="text" id="f-first" autocomplete="off" autocapitalize="words" value="${esc(d.first)}" placeholder="Ex. : Marc"></div>
+        <div class="fg"><label for="f-last">Nom</label><input type="text" id="f-last" autocomplete="off" autocapitalize="words" value="${esc(d.last)}" placeholder="Ex. : Dupont"></div>
+      </div>
+      <div class="frow2">
+        <div class="fg"><label for="f-phone">Téléphone</label><input type="tel" id="f-phone" inputmode="tel" value="${esc(d.phone)}" placeholder="Ex. : 90 12 34"></div>
+        <div class="fg"><label for="f-covers">Personnes</label><input type="number" id="f-covers" min="1" max="60" value="${d.covers}"></div>
+      </div>
+      <div class="frow">
+        <div class="fg"><label for="f-date">Date</label><input type="date" id="f-date" value="${d.date}"></div>
+        <div class="fg"><label for="f-time">Heure d'arrivée</label><select id="f-time">${times}</select></div>
+        <div class="fg"><label for="f-dur">Durée</label><select id="f-dur">${[60,90,120,150,180,240].map(v => `<option value="${v}" ${v === d.dur ? "selected" : ""}>${v >= 60 ? Math.floor(v/60) + "h" + (v % 60 ? pad(v % 60) : "") : v + " min"}</option>`).join("")}</select></div>
+      </div>
+      <div class="fg"><label for="f-note">Note (anniversaire, allergie, chaise bébé…)</label><textarea id="f-note">${esc(d.note)}</textarea></div>
+      <div class="fg"><label for="f-pref">Zone souhaitée</label><select id="f-pref">${[["any","Indifférent"],["RDC","RDC"],["R+1","R+1"]].map(([v,l]) => `<option value="${v}" ${d.pref === v ? "selected" : ""}>${l}</option>`).join("")}</select></div>
+      <div id="f-tables"></div>
+      <div id="f-msg"></div>
+      <button class="btn primary" type="submit" id="f-save">Enregistrer</button>
+    </form>`;
+  $("#back").onclick = () => { S.mode = S.draft.id ? "detail" : "list"; if (S.draft.id) S.sel = S.draft.id; S.draft = null; S.picking = false; renderAll(); };
+  const bind = (id, key, num) => { const el = $("#" + id); el.addEventListener("input", () => { d[key] = num ? +el.value : el.value; if (["covers","date","time","dur","pref"].includes(key)) { if (key === "date" && d.date !== S.date) { S.date = d.date; subscribeDay(); } if (key === "time") { S.time = d.time; S.svc = svcOf(d.time); } renderHeader(); renderPlan(); renderFormTables(); } }); };
+  bind("f-first","first"); bind("f-last","last"); bind("f-phone","phone"); bind("f-covers","covers",true); bind("f-date","date"); bind("f-time","time"); bind("f-dur","dur",true); bind("f-note","note"); bind("f-pref","pref");
+  $("#fm").addEventListener("submit", e => { e.preventDefault(); save(); });
+  renderFormTables();
+}
+function suggestions(){
+  const d = S.draft, iv = interval(d), busy = busyFor(iv, d.id), cov = Math.max(1, d.covers);
+  const free = TABLES.filter(t => !busy.has(t.n) && (d.pref === "any" || t.a === d.pref) && !(t.haute && (cov > 2 || S.day.match)));
+  const singles = free.filter(t => t.s >= cov).sort((a,b) => (a.s - b.s) || a.n - b.n).slice(0, 4).map(t => ({ tables: [t.n], seats: t.s }));
+  if (cov === 5 || cov === 6) for (const t of free.filter(t => canExt(t.n)).sort((a,b) => a.n - b.n).slice(0, Math.max(2, 5 - singles.length))) singles.push({ tables: [t.n], seats: 6, ext: true });
+  if (singles.length >= 2 || cov <= 4) return singles.slice(0, 5);
+  const pairs = [];
+  for (let i = 0; i < free.length; i++) for (let j = i + 1; j < free.length; j++) {
+    const a = free[i], b = free[j]; if (a.z !== b.z || a.a !== b.a) continue;
+    const dist = Math.hypot(a.x - b.x, a.y - b.y); if (dist > 330) continue;
+    const s = a.s + b.s; if (s < cov) continue;
+    pairs.push({ tables: [a.n, b.n], seats: s, dist });
+  }
+  pairs.sort((p,q) => (p.seats - q.seats) || (p.dist - q.dist));
+  return [...singles, ...pairs.slice(0, 4 - singles.length)];
+}
+function renderFormTables(){
+  const d = S.draft, box = $("#f-tables"); if (!box) return;
+  const iv = interval(d), busy = busyFor(iv, d.id), seats = seatsOf(d.tables);
+  const clash = d.tables.filter(n => busy.has(n));
+  const sug = suggestions();
+  box.innerHTML = `<div class="fg"><label>Tables</label>
+    <div class="chips">${d.tables.length ? d.tables.map(n => `<span class="chip">T${n} · ${extOf(d).includes(n) ? "6 pl. (4 + 2 chaises)" : TBY[n].s + " pl."}<button type="button" data-rm="${n}" aria-label="Retirer T${n}">✕</button></span>`).join("") : `<span class="muted">Aucune table attribuée</span>`}</div></div>
+    ${sug.length ? `<div class="fg"><label>Suggestions libres de ${d.time} à ${fromMin(iv[1])}</label><div class="sugg">${sug.map(s => `<button type="button" data-sug="${s.tables.join(",")}"><span><b>${tlabel(s.tables)}${s.ext ? " en table de 6" : ""}</b> · ${TBY[s.tables[0]].a}</span><span class="muted">${s.ext ? "4 places + 2 chaises" : s.seats + " places"}</span></button>`).join("")}</div></div>`
+      : `<div class="msg warn">Pas de table libre adaptée sur ce créneau${d.pref !== "any" ? " dans cette zone" : ""}. Choisissez sur le plan ou changez l'horaire.</div>`}
+    <button type="button" class="btn ghost sm" id="pick">Choisir sur le plan</button>`;
+  box.querySelectorAll("[data-rm]").forEach(b => b.onclick = () => { d.tables = d.tables.filter(n => n !== +b.dataset.rm); renderFormTables(); renderPlan(); });
+  box.querySelectorAll("[data-sug]").forEach(b => b.onclick = () => { d.tables = b.dataset.sug.split(",").map(Number); const z = TBY[d.tables[0]].z; if (z !== S.zone) S.zone = z; renderFormTables(); renderPlan(); });
+  $("#pick").onclick = () => { S.picking = true; if (d.tables.length) S.zone = TBY[d.tables[0]].z; renderPlan(); renderPickbar(); $("#planWrap").scrollIntoView({ behavior: "smooth", block: "start" }); };
+  let msg = "";
+  if (clash.length) msg += `<div class="msg err">${clash.map(n => `T${n} déjà prise par ${esc(busy.get(n).name)} à ${busy.get(n).time}`).join(" · ")}. Retirez-la ou changez l'horaire.</div>`;
+  else if (d.tables.length && maxSeatsOf(d.tables) < d.covers) msg += `<div class="msg warn">${maxSeatsOf(d.tables)} places au maximum pour ${d.covers} personnes, même en ajoutant des chaises : ajoutez une table.</div>`;
+  else if (extOf(d).length) msg += `<div class="msg info">${extOf(d).map(n => "T" + n).join(" et ")} ${extOf(d).length > 1 ? "passent" : "passe"} en table de 6 : 2 chaises à ajouter en bout de table.</div>`;
+  if (S.day.match) { const cap = Math.round(SEATS * MATCH_SHARE), used = S.resas.filter(r => r.id !== d.id && svcOf(r.time) === svcOf(d.time) && ["confirmee","arrivee","terminee"].includes(r.status)).reduce((s,r) => s + (+r.covers || 0), 0);
+    if (used + d.covers > cap) msg += `<div class="msg warn">Soir de match : cette réservation dépasse le plafond (${used + d.covers} / ${cap}). Possible, mais il restera moins de place pour les clients sans résa.</div>`; }
+  $("#f-msg").innerHTML = msg;
+}
+function renderPickbar(){
+  const pb = $("#pickbar");
+  if (!S.picking) { pb.innerHTML = ""; return; }
+  const d = S.draft, seats = seatsOf(d.tables);
+  pb.innerHTML = `<div class="pickbar"><span class="txt">Touchez les tables pour ${esc([d.first, d.last].filter(Boolean).join(" ") || "la réservation")} (${d.covers} pers., ${d.time}) : ${d.tables.length ? `<b>${tlabelX(d)}</b> · ${seats + 2 * extOf(d).length} places` : "aucune sélection"}</span><button class="btn primary sm" id="pickOk">Valider</button></div>`;
+  $("#pickOk").onclick = () => { S.picking = false; renderPickbar(); renderPlan(); renderFormTables(); $("#side").scrollIntoView({ behavior: "smooth", block: "start" }); };
+}
+async function save(){
+  const d = S.draft, msg = $("#f-msg");
+  const errs = [];
+  d.name = [d.first, d.last].map(x => String(x || "").trim()).filter(Boolean).join(" ");
+  if (!String(d.last || "").trim()) errs.push("Indiquez le nom du client.");
+  if (String(d.phone || "").replace(/\D/g, "").length < 6) errs.push("Indiquez le téléphone du client (6 chiffres) : il sert à l'appeler s'il est en retard.");
+  if (!(d.covers >= 1)) errs.push("Indiquez le nombre de personnes.");
+  const busy = busyFor(interval(d), d.id), clash = d.tables.filter(n => busy.has(n));
+  if (clash.length) errs.push(`Table${clash.length > 1 ? "s" : ""} ${tlabel(clash)} déjà prise${clash.length > 1 ? "s" : ""} sur ce créneau.`);
+  if (errs.length) { msg.innerHTML = `<div class="msg err">${errs.join("<br>")}</div>`; return; }
+  const body = { id: d.id || null, date: d.date, time: d.time, dur: d.dur, name: d.name.trim(), phone: d.phone.trim(), covers: d.covers, tables: [...d.tables].sort((a,b) => a-b),
+    note: d.note.trim(), status: d.status || "confirmee" };
+  $("#f-save").disabled = true;
+  let saved = null;
+  const ok = await act(async () => { saved = await rpc("staff_save_resa", { p_pin: S.pin, r: body }); return saved; }, d.id ? "Réservation modifiée" : "Réservation enregistrée");
+  if (!ok) { $("#f-save").disabled = false; return; }
+  const id = saved.id;
+  S.draft = null; S.picking = false; S.mode = "detail"; S.sel = id; S.svc = svcOf(body.time); S.time = body.time;
+  S.date = body.date; await loadDay();
+}
+
+/* ===================== Données (base BUFFALO, PIN équipe) ===================== */
+const CFG = window.BUFFALO;
+async function rpc(fn, args={}) {
+  const r = await fetch(`${CFG.SUPABASE_URL}/rest/v1/rpc/${fn}`, { method:"POST", headers:{ apikey:CFG.SUPABASE_KEY, "Content-Type":"application/json" }, body: JSON.stringify(args) });
+  const j = await r.json().catch(() => null);
+  if (!r.ok) { const m = String(j?.message || "Connexion impossible"); throw new Error(m.replace(/^.*?ERROR:\s*(P0001:\s*)?/, "")); }
+  return j;
+}
+let pollT = null, loadSeq = 0;
+async function loadDay(){
+  clearTimeout(pollT);
+  if (!S.pin) return;
+  const date = S.date, my = ++loadSeq;
+  try {
+    const d = await rpc("staff_resas", { p_pin: S.pin, p_date: date });
+    if (d === null) { logout(); return; }
+    if (my !== loadSeq || date !== S.date) return;
+    S.resas = d.resas; if (date === todayNC()) S.today = d.resas; S.day = d.jour || {}; S.pending = d.prochaines_demandes || []; S.pendingCount = d.demandes || 0; S.loaded = true;
+    $("#banner").innerHTML = "";
+    renderAll();
+  } catch(e) { $("#banner").innerHTML = `<div class="banner">Connexion perdue, nouvel essai dans quelques secondes. (${esc(e.message)})</div>`; }
+  pollT = setTimeout(loadDay, 10000);
+}
+function subscribeDay(){ S.loaded = false; S.resas = []; S.day = {}; renderAll(); loadDay(); loadToday(); }
+function renderPending(){
+  const el = $("#pending"); if (!el) return;
+  if (!S.pendingCount) { el.innerHTML = ""; return; }
+  el.innerHTML = `<div class="pending"><span>${S.pendingCount} demande${S.pendingCount > 1 ? "s" : ""} en ligne à valider :</span>${S.pending.map(p => `<button data-pd="${p.date}" data-pt="${p.time}">${new Date(p.date + "T12:00:00Z").toLocaleDateString("fr-FR", { day:"numeric", month:"short", timeZone:"UTC" })} ${p.time} · ${esc(p.name)} (${p.covers})</button>`).join("")}</div>`;
+  el.querySelectorAll("[data-pd]").forEach(b => b.onclick = () => { S.svc = svcOf(b.dataset.pt); S.time = b.dataset.pt; S.mode = "list"; if (b.dataset.pd !== S.date) { S.date = b.dataset.pd; subscribeDay(); } else renderAll(); });
+}
+
+/* ---------- Connexion PIN (partagée avec l'écran équipe) ---------- */
+const ss = { get(k){ try { return sessionStorage.getItem(k); } catch(e) { return null; } }, set(k,v){ try { sessionStorage.setItem(k,v); } catch(e) {} }, del(k){ try { sessionStorage.removeItem(k); } catch(e) {} } };
+let entry = "";
+function drawDots(){ $("#dots").innerHTML = Array.from({ length: Math.max(4, entry.length) }, (_,i) => `<i class="${i < entry.length ? "on" : ""}"></i>`).join(""); }
+function showLogin(){ $("#login").hidden = false; entry = ""; drawDots(); }
+function logout(){ ss.del("buffalo_pin"); S.pin = null; clearTimeout(pollT); clearTimeout(todayT); showLogin(); }
+async function submitPin(){
+  $("#lmsg").textContent = "";
+  if (entry.length < 4) { $("#lmsg").textContent = "4 chiffres minimum"; return; }
+  try { const ok = await rpc("staff_login", { p_pin: entry });
+    if (!ok) { $("#lmsg").textContent = "Code incorrect"; entry = ""; drawDots(); return; }
+    S.pin = entry; ss.set("buffalo_pin", entry); entry = ""; $("#login").hidden = true; subscribeDay();
+  } catch(e) { $("#lmsg").textContent = e.message; entry = ""; drawDots(); }
+}
+$("#pad").innerHTML = ["1","2","3","4","5","6","7","8","9","⌫","0","OK"].map(k => `<button data-k="${k}">${k}</button>`).join("");
+$("#pad").onclick = e => { const k = e.target.dataset?.k; if (!k) return; if (k === "⌫") entry = entry.slice(0,-1); else if (k === "OK") return submitPin(); else if (entry.length < 6) entry += k; drawDots(); };
+document.addEventListener("keydown", e => { if ($("#login").hidden) return; if (/^\d$/.test(e.key) && entry.length < 6) entry += e.key; else if (e.key === "Backspace") entry = entry.slice(0,-1); else if (e.key === "Enter") return submitPin(); drawDots(); });
+
+/* ===================== Rendu global et contrôles ===================== */
+function renderAll(){ renderHeader(); renderPlan(); renderSide(); renderPickbar(); renderPending(); renderAlerts(); }
+function changeDate(d){ if (!d || d === S.date) return; S.date = d; if (S.mode !== "form") { S.mode = "list"; } subscribeDay(); renderAll(); }
+$("#prevDay").onclick = () => changeDate(addDays(S.date, -1));
+$("#nextDay").onclick = () => changeDate(addDays(S.date, 1));
+$("#dateIn").onchange = e => changeDate(e.target.value);
+$("#todayBtn").onclick = () => changeDate(todayNC());
+document.querySelectorAll("[data-svc]").forEach(b => b.onclick = () => { S.svc = b.dataset.svc; S.time = SERVICES[S.svc].def; if (S.mode === "table" || S.mode === "detail") S.mode = "list"; renderAll(); });
+$("#timeSel").onchange = e => { S.time = e.target.value; renderPlan(); if (S.mode === "table") renderSide(); };
+$("#nowBtn").onclick = () => { const m = nowMinNC(); S.date !== todayNC() && changeDate(todayNC()); S.svc = svcOf(fromMin(m)); S.time = fromMin(Math.max(SERVICES[S.svc].from, m - m % 15)); renderAll(); };
+document.querySelectorAll("[data-zone]").forEach(b => b.onclick = () => { S.zone = b.dataset.zone; store.set("plan_zone", S.zone); renderPlan(); });
+$("#matchBtn").onclick = async () => { const v = !S.day.match; if (await act(() => rpc("staff_set_jour", { p_pin: S.pin, p_date: S.date, p_match: v }), v ? "Soir de match activé" : "Soir de match désactivé")) loadDay(); };
+setInterval(() => { renderAlerts(); if (S.date === todayNC() && !S.picking && S.mode !== "form") { renderPlan(); if (S.mode === "list") renderSide(); } }, 20000);
+function drawSnd(){ const b = $("#sndBtn"); b.setAttribute("aria-pressed", soundOn); b.textContent = "Son des alertes : " + (soundOn ? "oui" : "non"); }
+$("#sndBtn").onclick = () => { soundOn = !soundOn; store.set("plan_son", soundOn ? "1" : "0"); drawSnd(); if (soundOn) beep(false); };
+drawSnd();
+
+renderAll();
+(async () => {
+  const saved = ss.get("buffalo_pin");
+  if (saved) { try { if (await rpc("staff_login", { p_pin: saved })) { S.pin = saved; $("#login").hidden = true; subscribeDay(); return; } } catch(e) {} ss.del("buffalo_pin"); }
+  showLogin();
+})();
+</script>
+
+</body>
+</html>

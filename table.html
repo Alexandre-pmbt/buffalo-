@@ -1,0 +1,378 @@
+<!doctype html>
+<html lang="fr">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<meta name="theme-color" content="#121110">
+<title>BUFFALO — Commande à table</title>
+<link rel="icon" href="logo_on_dark.png">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Teko:wght@500;600&family=Barlow+Condensed:ital,wght@0,400;0,500;0,600;0,700;1,400&display=swap" rel="stylesheet">
+<script src="config.js"></script>
+<style>
+:root{
+  --bg:#121110; --bg2:#1b1918; --card:#211e1c; --line:#34302c;
+  --red:#e3232b; --red-d:#b9161d; --cream:#f6eedd; --muted:#a79f92; --ok:#3fae63; --warn:#e6a23c;
+  --radius:14px;
+}
+*{box-sizing:border-box;-webkit-tap-highlight-color:transparent}
+html,body{margin:0;background:var(--bg);color:var(--cream);font-family:"Barlow Condensed",system-ui,sans-serif;font-size:17px;line-height:1.3}
+body{background:
+  radial-gradient(120% 60% at 100% 0%, rgba(227,35,43,.14), transparent 60%),
+  repeating-linear-gradient(100deg, rgba(255,255,255,.012) 0 3px, transparent 3px 9px), var(--bg);
+  min-height:100vh; padding-bottom:110px}
+button{font:inherit;color:inherit;border:0;background:none;cursor:pointer}
+.display{font-family:Teko,"Barlow Condensed",sans-serif;text-transform:uppercase;letter-spacing:.02em;line-height:.95}
+.wrap{max-width:640px;margin:0 auto;padding:0 16px}
+
+header{display:flex;align-items:center;gap:14px;padding:18px 16px 10px;max-width:640px;margin:0 auto}
+header img{width:62px;height:auto}
+header .t{flex:1}
+header .t .display{font-size:32px;color:var(--cream)}
+header .t small{display:block;color:var(--muted);font-size:15px;margin-top:2px}
+.tablechip{background:var(--red);color:#fff;border-radius:999px;padding:6px 14px 3px;font-family:Teko;font-size:24px;white-space:nowrap}
+
+.banner{margin:6px 16px 0;max-width:608px;margin-inline:auto;border-radius:10px;padding:10px 14px;font-weight:600}
+.banner.test{background:#3a2a0b;color:#ffd58a;border:1px solid #6b4d13}
+.banner.closed{background:#3a1012;color:#ffb4b7;border:1px solid #6e1d21}
+.banner.fid{background:#13301f;color:#b5ecc8;border:1px solid #23573a;font-weight:600}
+.banner.fid a{color:inherit}
+
+nav.sections{position:sticky;top:0;z-index:20;background:rgba(18,17,16,.94);backdrop-filter:blur(8px);border-bottom:1px solid var(--line);margin-top:12px}
+.sec-tabs{display:flex;gap:6px;max-width:640px;margin:0 auto;padding:10px 16px 6px}
+.sec-tabs button{flex:1;padding:9px 6px 5px;border-radius:10px;background:var(--bg2);font-family:Teko;font-size:22px;text-transform:uppercase;color:var(--muted);border:1px solid var(--line)}
+.sec-tabs button[aria-selected=true]{background:var(--red);color:#fff;border-color:var(--red)}
+.chips{display:flex;gap:8px;overflow-x:auto;max-width:640px;margin:0 auto;padding:4px 16px 10px;scrollbar-width:none}
+.chips::-webkit-scrollbar{display:none}
+.chips button{white-space:nowrap;padding:6px 12px;border-radius:999px;border:1px solid var(--line);color:var(--muted);font-weight:600;font-size:15px}
+.chips button.on{color:var(--cream);border-color:var(--cream)}
+
+.cat{padding-top:18px;scroll-margin-top:120px}
+.cat h2{margin:0;font-size:38px;color:var(--red)}
+.cat h2 + .sub{color:var(--muted);font-style:italic;font-size:15px;margin-top:2px}
+.cat .rule{height:3px;background:var(--red);border-radius:2px;margin:8px 0 6px;width:100%}
+.cat .closednote{background:var(--bg2);border:1px dashed var(--line);color:var(--muted);border-radius:10px;padding:8px 12px;margin:8px 0;font-size:15px}
+.item{display:flex;gap:12px;align-items:center;padding:12px 0;border-bottom:1px solid var(--line)}
+.item .info{flex:1;min-width:0}
+.item .name{font-weight:700;text-transform:uppercase;font-size:18px;letter-spacing:.01em}
+.item .desc{color:var(--muted);font-style:italic;font-size:14.5px;text-transform:uppercase;margin-top:2px}
+.item .price{font-weight:700;white-space:nowrap;font-size:18px}
+.item .price small{font-weight:500;color:var(--muted);font-size:13px;display:block;text-align:right}
+.add{width:40px;height:40px;border-radius:50%;background:var(--red);color:#fff;font-size:26px;line-height:40px;flex:none;display:grid;place-items:center}
+.add:active{transform:scale(.94)}
+.item.off{opacity:.45}
+.item.off .add{background:var(--line)}
+.tag{display:inline-block;font-size:12px;font-weight:700;letter-spacing:.04em;text-transform:uppercase;padding:2px 7px;border-radius:5px;background:var(--line);color:var(--cream);margin-left:6px;vertical-align:2px}
+.legal{color:var(--muted);font-size:13px;text-align:center;margin:26px 0 10px}
+
+.cartbar{position:fixed;left:0;right:0;bottom:0;z-index:30;padding:12px 16px calc(12px + env(safe-area-inset-bottom));background:linear-gradient(transparent, rgba(18,17,16,.95) 30%)}
+.cartbar button{display:flex;width:100%;max-width:608px;margin:0 auto;align-items:center;justify-content:space-between;background:var(--red);color:#fff;border-radius:var(--radius);padding:14px 18px 10px;font-family:Teko;font-size:26px;text-transform:uppercase;box-shadow:0 10px 30px rgba(227,35,43,.35)}
+.cartbar .count{background:#fff;color:var(--red);border-radius:999px;min-width:30px;height:30px;display:inline-grid;place-items:center;font-size:20px;padding:3px 8px 0;margin-right:8px}
+.hidden{display:none!important}
+
+/* Feuilles (modales du bas) */
+.scrim{position:fixed;inset:0;background:rgba(0,0,0,.6);z-index:40;opacity:0;pointer-events:none;transition:opacity .2s}
+.scrim.on{opacity:1;pointer-events:auto}
+.sheet{position:fixed;left:0;right:0;bottom:0;z-index:50;background:var(--bg2);border-radius:20px 20px 0 0;max-height:92vh;display:flex;flex-direction:column;transform:translateY(105%);transition:transform .25s ease;max-width:640px;margin:0 auto;border-top:3px solid var(--red)}
+.sheet.on{transform:none}
+.sheet .head{padding:18px 18px 8px;display:flex;gap:10px;align-items:flex-start}
+.sheet .head .display{font-size:32px;flex:1}
+.sheet .close{width:36px;height:36px;border-radius:50%;background:var(--card);font-size:20px;flex:none}
+.sheet .body{overflow:auto;padding:0 18px 12px}
+.sheet .foot{padding:12px 18px calc(14px + env(safe-area-inset-bottom));border-top:1px solid var(--line);background:var(--bg2)}
+.grp{margin:14px 0}
+.grp .gt{display:flex;justify-content:space-between;align-items:baseline;font-weight:700;text-transform:uppercase;font-size:16px;margin-bottom:6px}
+.grp .gt span{font-weight:500;color:var(--muted);text-transform:none;font-size:14px}
+.grp .gt span.need{color:var(--warn)}
+.opt{display:flex;align-items:center;gap:10px;width:100%;text-align:left;padding:11px 12px;border:1px solid var(--line);border-radius:10px;margin-bottom:6px;background:var(--card)}
+.opt .mk{width:22px;height:22px;border-radius:6px;border:2px solid var(--muted);flex:none;display:grid;place-items:center;font-size:14px;font-weight:700}
+.opt.radio .mk{border-radius:50%}
+.opt.on{border-color:var(--red)}
+.opt.on .mk{background:var(--red);border-color:var(--red);color:#fff}
+.opt .l{flex:1}
+.opt .d{color:var(--muted);font-size:15px}
+.qty{display:flex;align-items:center;gap:6px}
+.qty button{width:40px;height:40px;border-radius:10px;background:var(--card);font-size:24px;border:1px solid var(--line)}
+.qty b{min-width:30px;text-align:center;font-size:20px}
+.primary{width:100%;background:var(--red);color:#fff;border-radius:var(--radius);padding:14px 16px 10px;font-family:Teko;font-size:26px;text-transform:uppercase;display:flex;justify-content:space-between;align-items:center}
+.primary:disabled{background:var(--line);color:var(--muted)}
+.secondary{width:100%;border:1px solid var(--line);border-radius:var(--radius);padding:12px;font-weight:700;text-transform:uppercase;margin-top:8px}
+.row{display:flex;gap:12px;align-items:center}
+.cline{padding:12px 0;border-bottom:1px solid var(--line)}
+.cline .n{font-weight:700;text-transform:uppercase}
+.cline .o{color:var(--muted);font-size:14.5px}
+.cline .p{font-weight:700;white-space:nowrap}
+textarea{width:100%;background:var(--card);color:var(--cream);border:1px solid var(--line);border-radius:10px;padding:10px;font:inherit;font-size:16px;resize:vertical;min-height:60px}
+.total{display:flex;justify-content:space-between;font-family:Teko;font-size:30px;text-transform:uppercase;margin:12px 0 4px}
+.err{background:#3a1012;color:#ffb4b7;border-radius:10px;padding:10px 12px;margin:10px 0;font-weight:600}
+.note{color:var(--muted);font-size:14px}
+
+/* Suivi de commande */
+.status{padding:22px 0}
+.status .big{font-size:48px;color:var(--cream);margin:6px 0}
+.status .num{color:var(--red)}
+.steps{display:flex;gap:6px;margin:16px 0}
+.steps div{flex:1;height:6px;border-radius:3px;background:var(--line)}
+.steps div.on{background:var(--red)}
+.pill{font-size:13px;font-weight:700;text-transform:uppercase;padding:3px 8px;border-radius:6px;white-space:nowrap}
+.pill.a_faire{background:#3a2a0b;color:#ffd58a}
+.pill.prete{background:#123a20;color:#9be3b3}
+.pill.servie{background:var(--line);color:var(--muted)}
+.empty{padding:60px 20px;text-align:center}
+.empty img{width:120px;opacity:.9}
+.spinner{width:28px;height:28px;border:3px solid var(--line);border-top-color:var(--red);border-radius:50%;animation:spin 1s linear infinite;margin:40px auto}
+@keyframes spin{to{transform:rotate(360deg)}}
+.toast{position:fixed;left:50%;bottom:100px;transform:translateX(-50%) translateY(20px);background:var(--cream);color:#111;padding:10px 16px;border-radius:999px;font-weight:700;opacity:0;transition:.2s;z-index:60;pointer-events:none}
+.toast.on{opacity:1;transform:translateX(-50%)}
+</style>
+</head>
+<body>
+<header>
+  <img src="logo_on_dark.png" alt="BUFFALO Sports Bar">
+  <div class="t"><div class="display">Commande à table</div><small>Commandez, payez, on vous sert.</small></div>
+  <div class="tablechip hidden" id="tableChip"></div>
+</header>
+<div id="banners"></div>
+
+<main id="app"><div class="spinner"></div></main>
+
+<div class="cartbar hidden" id="cartbar"><button id="openCart"><span><span class="count" id="cartCount">0</span>Mon panier</span><span id="cartTotal">0 F</span></button></div>
+
+<div class="scrim" id="scrim"></div>
+<section class="sheet" id="itemSheet" role="dialog" aria-modal="true" aria-labelledby="isTitle">
+  <div class="head"><div><div class="display" id="isTitle"></div><div class="note" id="isDesc"></div></div><button class="close" data-close aria-label="Fermer">✕</button></div>
+  <div class="body" id="isBody"></div>
+  <div class="foot"><div class="row">
+    <div class="qty"><button id="isMinus" aria-label="Moins">−</button><b id="isQty">1</b><button id="isPlus" aria-label="Plus">+</button></div>
+    <button class="primary" id="isAdd" style="flex:1"><span>Ajouter</span><span id="isPrice"></span></button>
+  </div></div>
+</section>
+<section class="sheet" id="cartSheet" role="dialog" aria-modal="true" aria-labelledby="csTitle">
+  <div class="head"><div class="display" id="csTitle">Mon panier</div><button class="close" data-close aria-label="Fermer">✕</button></div>
+  <div class="body" id="csBody"></div>
+  <div class="foot">
+    <div id="csErr"></div>
+    <button class="primary" id="payBtn"><span>Payer par carte</span><span id="payAmount"></span></button>
+    <div class="note" style="text-align:center;margin-top:8px">Paiement sécurisé. Votre commande part en cuisine et au bar dès le paiement validé.</div>
+  </div>
+</section>
+<div class="toast" id="toast"></div>
+
+<script>
+const CFG = window.BUFFALO;
+const $ = (s, el=document) => el.querySelector(s);
+const fmt = n => n.toLocaleString('fr-FR').replace(/ | /g,' ') + ' F';
+const esc = s => String(s ?? '').replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+const params = new URLSearchParams(location.search);
+const TABLE = parseInt(params.get('t') || params.get('table') || '', 10);
+const store = { get(k){ try{return JSON.parse(localStorage.getItem(k))}catch(e){return null} }, set(k,v){ try{localStorage.setItem(k,JSON.stringify(v))}catch(e){} } };
+
+async function rpc(fn, args={}) {
+  const r = await fetch(`${CFG.SUPABASE_URL}/rest/v1/rpc/${fn}`, { method:'POST',
+    headers:{ apikey:CFG.SUPABASE_KEY, 'Content-Type':'application/json' }, body: JSON.stringify(args) });
+  const j = await r.json().catch(()=>null);
+  if (!r.ok) throw new Error(j?.message || 'Erreur réseau, réessayez.');
+  return j;
+}
+async function startPayment(orderId) {
+  const r = await fetch(`${CFG.SUPABASE_URL}/functions/v1/paiement`, { method:'POST',
+    headers:{ apikey:CFG.SUPABASE_KEY, 'Content-Type':'application/json' },
+    body: JSON.stringify({ order_id: orderId, return_url: location.origin + location.pathname + `?t=${TABLE}&cmd=${orderId}` }) });
+  const j = await r.json().catch(()=>({error:'Erreur de paiement'}));
+  if (!r.ok || j.error) throw new Error(j.error || 'Erreur de paiement');
+  if (j.paid) { location.href = `?t=${TABLE}&cmd=${orderId}`; return; }
+  // Redirection vers la page de paiement sécurisée EpayNC
+  const f = document.createElement('form'); f.method = 'POST'; f.action = j.action;
+  for (const [k,v] of Object.entries(j.fields)) { const i = document.createElement('input'); i.type='hidden'; i.name=k; i.value=v; f.appendChild(i); }
+  document.body.appendChild(f); f.submit();
+}
+function toast(msg){ const t=$('#toast'); t.textContent=msg; t.classList.add('on'); clearTimeout(t._h); t._h=setTimeout(()=>t.classList.remove('on'),1600); }
+
+/* ---------- État ---------- */
+let MENU = null, SECTION = null, ME = null;
+const TOKEN = (() => { try { return localStorage.getItem('buffalo_token'); } catch(e) { return null; } })();
+let cart = (store.get('buffalo_cart_'+TABLE) || []);
+const saveCart = () => { store.set('buffalo_cart_'+TABLE, cart); renderCartBar(); };
+const itemsById = {};
+
+/* ---------- Démarrage ---------- */
+(async function init(){
+  if (!TABLE) { $('#app').innerHTML = `<div class="empty wrap"><img src="logo_on_dark.png" alt=""><h1 class="display" style="font-size:40px">Scannez le QR code<br>de votre table</h1><p class="note">Il se trouve sur le chevalet posé sur votre table.</p></div>`; return; }
+  $('#tableChip').textContent = 'Table ' + TABLE; $('#tableChip').classList.remove('hidden');
+  if (params.get('cmd')) return showStatus(params.get('cmd'));
+  try { MENU = await rpc('get_menu'); } catch(e) { $('#app').innerHTML = `<div class="wrap err">${esc(e.message)}</div>`; return; }
+  if (TOKEN) { try { ME = await rpc('client_me', { p_token: TOKEN }); } catch(e) {} }
+  MENU.categories.forEach(c => c.items.forEach(i => itemsById[i.id] = {...i, cat:c}));
+  cart = cart.filter(l => itemsById[l.item_id]);
+  renderBanners(); renderMenu(); renderCartBar();
+})();
+
+function renderBanners(){
+  let h = '';
+  if (MENU?.test_mode) h += `<div class="banner test">Mode test : aucun paiement réel n'est encaissé.</div>`;
+  if (MENU && !MENU.ordering_open) h += `<div class="banner closed">La commande à table est momentanément fermée. Un serveur prend votre commande.</div>`;
+  h += ME ? `<div class="banner fid">Carte fidélité de ${esc(ME.prenom)} · ${ME.points} points. Vos achats hors alcool seront crédités.</div>`
+         : `<div class="banner fid"><a href="index.html#compte" id="fidLink">Vous avez une carte fidélité ? Connectez-vous pour cumuler des points.</a></div>`;
+  const last = store.get('buffalo_last_'+TABLE);
+  if (last && Date.now() - last.at < 4*3600e3) h += `<div class="wrap" style="margin-top:8px"><button class="secondary" onclick="location.href='?t=${TABLE}&cmd=${last.id}'">Suivre ma commande n° ${esc(last.number ?? '')}</button></div>`;
+  $('#banners').innerHTML = h;
+  const fl = $('#fidLink'); if (fl) fl.onclick = () => { try { sessionStorage.setItem('buffalo_return', location.href); } catch(e) {} };
+}
+
+/* ---------- Carte ---------- */
+function renderMenu(){
+  const sections = [...new Set(MENU.categories.map(c => c.section))];
+  // Section par défaut : la première qui a un service ouvert côté cuisine, sinon Boissons
+  if (!SECTION) SECTION = sections.find(s => s !== 'Boissons' && MENU.categories.some(c => c.section===s && c.open)) || 'Boissons';
+  const cats = MENU.categories.filter(c => c.section === SECTION);
+  $('#app').innerHTML = `
+  <nav class="sections"><div class="sec-tabs" role="tablist">${sections.map(s => `<button role="tab" aria-selected="${s===SECTION}" data-sec="${esc(s)}">${esc(s==='Petit-déjeuner'?'Petit-déj':s)}</button>`).join('')}</div>
+    <div class="chips">${cats.map(c => `<button data-go="${c.id}">${esc(c.name)}</button>`).join('')}</div></nav>
+  <div class="wrap">${cats.map(c => `
+    <section class="cat" id="cat-${c.id}">
+      <h2 class="display">${esc(c.name)}</h2>${c.subtitle ? `<div class="sub">${esc(c.subtitle)}</div>`:''}
+      <div class="rule"></div>
+      ${c.open ? '' : `<div class="closednote">Pas servi en ce moment — ${esc(c.service)}</div>`}
+      ${c.items.map(i => {
+        const off = !c.open || !i.available || !MENU.ordering_open;
+        const from = i.options.some(g => g.choices.some(ch => ch.delta)) ? '<small>à partir de</small>' : '';
+        return `<div class="item ${off?'off':''}">
+          <div class="info"><div class="name">${esc(i.name)}${!i.available?'<span class="tag">Épuisé</span>':''}</div>${i.description?`<div class="desc">${esc(i.description)}</div>`:''}</div>
+          <div class="price">${from}${fmt(i.price)}</div>
+          <button class="add" ${off?'disabled':''} data-add="${i.id}" aria-label="Ajouter ${esc(i.name)}">+</button></div>`; }).join('')}
+    </section>`).join('')}
+    <p class="legal">Prix en francs CFP, TGC incluse.${SECTION==='Boissons' ? '<br>L\'abus d\'alcool est dangereux pour la santé, à consommer avec modération. Vente d\'alcool interdite aux mineurs.' : ''}</p>
+  </div>`;
+  $('#app').querySelectorAll('[data-sec]').forEach(b => b.onclick = () => { SECTION = b.dataset.sec; renderMenu(); scrollTo({top:0}); });
+  $('#app').querySelectorAll('[data-go]').forEach(b => b.onclick = () => document.getElementById('cat-'+b.dataset.go).scrollIntoView({behavior:'smooth'}));
+  $('#app').querySelectorAll('[data-add]').forEach(b => b.onclick = () => openItem(+b.dataset.add));
+  // Chip active au défilement
+  const chips = [...$('#app').querySelectorAll('[data-go]')];
+  const obs = new IntersectionObserver(es => es.forEach(e => { if (e.isIntersecting) { chips.forEach(c => c.classList.toggle('on', 'cat-'+c.dataset.go === e.target.id)); } }), {rootMargin:'-130px 0px -60% 0px'});
+  $('#app').querySelectorAll('.cat').forEach(s => obs.observe(s));
+}
+
+/* ---------- Fiche article ---------- */
+let cur = null;
+function openItem(id){
+  const it = itemsById[id]; if (!it) return;
+  cur = { it, qty:1, picks: it.options.map(() => []) };
+  // Présélection du premier choix pour les choix uniques obligatoires
+  it.options.forEach((g,gi) => { if (g.min===1 && g.max===1) cur.picks[gi] = [0]; });
+  if (!it.options.length) { addToCart(); return; }
+  $('#isTitle').textContent = it.name; $('#isDesc').textContent = it.description || '';
+  renderItemSheet(); openSheet('#itemSheet');
+}
+function unitPrice(it, picks){ return it.price + it.options.reduce((s,g,gi) => s + picks[gi].reduce((a,ix) => a + (g.choices[ix].delta||0), 0), 0); }
+function renderItemSheet(){
+  const {it, picks} = cur;
+  $('#isBody').innerHTML = it.options.map((g,gi) => {
+    const single = g.max === 1, n = picks[gi].length;
+    const rule = g.min===g.max ? `${g.min} au choix` : g.min===0 ? `Facultatif · ${g.max} max.` : `${g.min} à ${g.max}`;
+    return `<div class="grp"><div class="gt">${esc(g.name)} <span class="${n<g.min?'need':''}">${rule}${!single?` · ${n}/${g.max}`:''}</span></div>
+      ${g.choices.map((c,ci) => { const cnt = picks[gi].filter(x=>x===ci).length;
+        return `<button class="opt ${single?'radio':''} ${cnt?'on':''}" data-g="${gi}" data-c="${ci}"><span class="mk">${cnt>1?cnt:(cnt?'✓':'')}</span><span class="l">${esc(c.label)}</span>${c.delta?`<span class="d">+${fmt(c.delta)}</span>`:''}</button>`; }).join('')}
+      ${!single && g.min===2 && g.max===2 ? '<div class="note">Touchez deux fois un même choix pour le doubler.</div>':''}</div>`;
+  }).join('');
+  $('#isBody').querySelectorAll('.opt').forEach(b => b.onclick = () => {
+    const gi = +b.dataset.g, ci = +b.dataset.c, g = it.options[gi], p = cur.picks[gi];
+    if (g.max === 1) { cur.picks[gi] = (p[0]===ci && g.min===0) ? [] : [ci]; }
+    else if (g.min===2 && g.max===2) { // accompagnements : un même choix peut être doublé
+      if (p.length < 2) p.push(ci); else { const k = p.lastIndexOf(ci); if (k>=0) p.splice(k,1); else { p.shift(); p.push(ci); } }
+    } else { const k = p.indexOf(ci); if (k>=0) p.splice(k,1); else if (p.length < g.max) p.push(ci); else toast(`${g.max} maximum`); }
+    renderItemSheet();
+  });
+  $('#isQty').textContent = cur.qty;
+  const ok = it.options.every((g,gi) => picks[gi].length >= g.min && picks[gi].length <= g.max);
+  $('#isAdd').disabled = !ok;
+  $('#isPrice').textContent = fmt(unitPrice(it, picks) * cur.qty);
+}
+$('#isMinus').onclick = () => { if (cur.qty>1) { cur.qty--; renderItemSheet(); } };
+$('#isPlus').onclick = () => { if (cur.qty<30) { cur.qty++; renderItemSheet(); } };
+$('#isAdd').onclick = addToCart;
+function addToCart(){
+  const {it, qty, picks} = cur;
+  const key = it.id + ':' + JSON.stringify(picks);
+  const ex = cart.find(l => l.key === key);
+  if (ex) ex.qty = Math.min(30, ex.qty + qty); else cart.push({ key, item_id: it.id, qty, choices: picks.map(p=>[...p]) });
+  saveCart(); closeSheets(); toast('Ajouté au panier');
+}
+
+/* ---------- Panier ---------- */
+function lineInfo(l){
+  const it = itemsById[l.item_id];
+  const opts = it.options.map((g,gi) => l.choices[gi].map(ix => g.choices[ix].label).join(' + ')).filter(Boolean).join(' · ');
+  const unit = unitPrice(it, l.choices);
+  return { it, opts, unit, total: unit * l.qty };
+}
+function cartTotal(){ return cart.reduce((s,l) => s + lineInfo(l).total, 0); }
+function renderCartBar(){
+  const n = cart.reduce((s,l)=>s+l.qty,0);
+  $('#cartbar').classList.toggle('hidden', n===0 || !!params.get('cmd'));
+  $('#cartCount').textContent = n; $('#cartTotal').textContent = fmt(cartTotal());
+}
+$('#openCart').onclick = () => { renderCart(); openSheet('#cartSheet'); };
+function renderCart(){
+  $('#csErr').innerHTML = '';
+  if (!cart.length) { closeSheets(); return; }
+  $('#csBody').innerHTML = cart.map((l,i) => { const x = lineInfo(l); return `
+    <div class="cline"><div class="row"><div style="flex:1"><div class="n">${esc(x.it.name)}</div>${x.opts?`<div class="o">${esc(x.opts)}</div>`:''}</div><div class="p">${fmt(x.total)}</div></div>
+    <div class="row" style="margin-top:8px;justify-content:space-between"><div class="qty"><button data-m="${i}" aria-label="Moins">−</button><b>${l.qty}</b><button data-p="${i}" aria-label="Plus">+</button></div><button class="note" data-r="${i}" style="text-decoration:underline">Retirer</button></div></div>`; }).join('')
+    + `<div style="margin-top:14px"><label class="note" for="cartNote">Une précision pour la cuisine ou le bar ? (cuisson, allergie…)</label><textarea id="cartNote" maxlength="300" placeholder="Ex. : bavette saignante, sans oignons">${esc(store.get('buffalo_note_'+TABLE) || '')}</textarea></div>
+    <div class="total"><span>Total</span><span>${fmt(cartTotal())}</span></div>`;
+  $('#payAmount').textContent = fmt(cartTotal());
+  $('#csBody').querySelectorAll('[data-m]').forEach(b => b.onclick = () => { const l = cart[+b.dataset.m]; if (l.qty>1) l.qty--; else cart.splice(+b.dataset.m,1); saveCart(); renderCart(); });
+  $('#csBody').querySelectorAll('[data-p]').forEach(b => b.onclick = () => { const l = cart[+b.dataset.p]; if (l.qty<30) l.qty++; saveCart(); renderCart(); });
+  $('#csBody').querySelectorAll('[data-r]').forEach(b => b.onclick = () => { cart.splice(+b.dataset.r,1); saveCart(); renderCart(); });
+  $('#cartNote').oninput = e => store.set('buffalo_note_'+TABLE, e.target.value);
+}
+$('#payBtn').onclick = async () => {
+  const btn = $('#payBtn'); btn.disabled = true; $('#csErr').innerHTML = '';
+  try {
+    const res = await rpc('place_order', { p_table: TABLE, p_lines: cart.map(l => ({ item_id: l.item_id, qty: l.qty, choices: l.choices })), p_note: $('#cartNote')?.value || null, p_client_token: ME ? TOKEN : null });
+    store.set('buffalo_last_'+TABLE, { id: res.order_id, at: Date.now() });
+    await startPayment(res.order_id);
+  } catch(e) { $('#csErr').innerHTML = `<div class="err">${esc(e.message)}</div>`; btn.disabled = false; }
+};
+
+/* ---------- Suivi de commande ---------- */
+let pollTimer = null;
+async function showStatus(id){
+  $('#cartbar').classList.add('hidden');
+  let o;
+  try { o = await rpc('get_order', { p_order: id }); } catch(e) { o = null; }
+  if (!o) { $('#app').innerHTML = `<div class="wrap err">Commande introuvable.</div><div class="wrap"><button class="secondary" onclick="location.href='?t=${TABLE}'">Retour à la carte</button></div>`; return; }
+  if (o.status === 'payee') { cart = []; saveCart(); store.set('buffalo_note_'+TABLE, ''); const l = store.get('buffalo_last_'+TABLE)||{}; store.set('buffalo_last_'+TABLE, {id:o.id, number:o.number, at:l.at||Date.now()}); }
+  const lines = o.lines || [];
+  const done = lines.length && lines.every(l => l.status !== 'a_faire');
+  const served = lines.length && lines.every(l => l.status === 'servie');
+  const step = o.status !== 'payee' ? 0 : served ? 3 : done ? 2 : 1;
+  const titles = { attente_paiement:'Paiement en attente', echec:'Paiement non abouti', annulee:'Commande annulée' };
+  const title = o.status === 'payee' ? (served ? 'Bon appétit !' : done ? 'C\'est prêt, ça arrive !' : 'Commande reçue') : titles[o.status];
+  const lab = { a_faire:'En préparation', prete:'Prêt', servie:'Servi' };
+  $('#app').innerHTML = `<div class="wrap status">
+    <div class="note">Commande <span class="num display" style="font-size:24px">n° ${o.number}</span> · Table ${o.table}</div>
+    <div class="display big">${esc(title)}</div>
+    <div class="steps">${[1,2,3].map(s => `<div class="${step>=s?'on':''}"></div>`).join('')}</div>
+    ${o.status === 'attente_paiement' ? `<p class="note">Si vous avez déjà payé, la confirmation arrive dans quelques secondes. Sinon, relancez le paiement.</p><button class="primary" id="retry"><span>Payer</span><span>${fmt(o.total)}</span></button>` : ''}
+    ${o.status === 'echec' ? `<p>Le paiement a été refusé ou interrompu. Aucune somme n'a été débitée pour cette tentative.</p><button class="primary" id="retry"><span>Réessayer le paiement</span><span>${fmt(o.total)}</span></button>` : ''}
+    ${o.status === 'payee' ? `<p class="note">Paiement validé. Cette page se met à jour toute seule.</p>${o.points > 0 ? `<div class="banner fid" style="margin:8px 0">+${o.points} points ajoutés à votre carte fidélité.</div>` : ''}` : ''}
+    <div style="margin-top:12px">${lines.map(l => `<div class="cline row"><div style="flex:1"><div class="n">${l.qty} × ${esc(l.name)}</div>${l.options?`<div class="o">${esc(l.options)}</div>`:''}</div>${o.status==='payee'?`<span class="pill ${l.status}">${lab[l.status]}</span>`:`<span class="p">${fmt(l.line_total)}</span>`}</div>`).join('')}</div>
+    <div class="total"><span>Total</span><span>${fmt(o.total)}</span></div>
+    <button class="secondary" onclick="location.href='?t=${TABLE}'">${o.status==='payee'?'Commander autre chose':'Retour à la carte'}</button>
+  </div>`;
+  const r = $('#retry'); if (r) r.onclick = async () => { r.disabled = true; try { await startPayment(o.id); } catch(e) { r.insertAdjacentHTML('afterend', `<div class="err">${esc(e.message)}</div>`); r.disabled = false; } };
+  clearTimeout(pollTimer);
+  if (!served && o.status !== 'annulee' && o.status !== 'echec') pollTimer = setTimeout(() => showStatus(id), o.status==='payee' ? 8000 : 3000);
+}
+
+/* ---------- Feuilles ---------- */
+function openSheet(sel){ $('#scrim').classList.add('on'); $(sel).classList.add('on'); }
+function closeSheets(){ $('#scrim').classList.remove('on'); document.querySelectorAll('.sheet').forEach(s => s.classList.remove('on')); }
+$('#scrim').onclick = closeSheets;
+document.querySelectorAll('[data-close]').forEach(b => b.onclick = closeSheets);
+document.addEventListener('keydown', e => { if (e.key === 'Escape') closeSheets(); });
+</script>
+</body>
+</html>

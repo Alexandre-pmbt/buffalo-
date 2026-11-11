@@ -1,0 +1,329 @@
+<!doctype html>
+<html lang="fr">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<meta name="theme-color" content="#121110">
+<title>BUFFALO Sports Bar · Païta</title>
+<meta name="description" content="BUFFALO, sports bar et brasserie au centre commercial NOVA (Hyper U) à Païta. Carte, réservation en ligne et carte fidélité.">
+<link rel="icon" href="logo_on_dark.png">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Teko:wght@500;600&family=Barlow+Condensed:ital,wght@0,400;0,500;0,600;0,700;1,400&display=swap" rel="stylesheet">
+<script src="config.js"></script>
+<script src="vendor/qrcode-generator.js"></script>
+<style>
+/* Site public : en-tête avec 3 onglets (Carte, Réserver, Ma carte fidélité), une colonne centrée de 720 px. Identité BUFFALO sombre. */
+:root{
+  --bg:#121110; --panel:#1b1918; --card:#221e1c; --line:#38322e;
+  --red:#e3232b; --red-soft:rgba(227,35,43,.18); --cream:#f6eedd; --muted:#a99f93;
+  --amber:#e9a53a; --amber-soft:rgba(233,165,58,.18); --green:#3fae63; --green-soft:rgba(63,174,99,.18);
+  --display:"Teko","Oswald","Arial Narrow",sans-serif; --body:"Barlow Condensed","Arial Narrow",system-ui,sans-serif;
+  color-scheme:dark;
+}
+*{box-sizing:border-box;-webkit-tap-highlight-color:transparent}
+html,body{margin:0;background:var(--bg);color:var(--cream)}
+body{font-family:var(--body);font-size:17px;line-height:1.35;min-height:100vh;
+  background:radial-gradient(110% 50% at 100% 0%, rgba(227,35,43,.14), transparent 60%), var(--bg)}
+button,input,select,textarea{font:inherit;color:inherit}
+button{cursor:pointer;border:0;background:none}
+:focus-visible{outline:2px solid var(--cream);outline-offset:2px}
+.d{font-family:var(--display);text-transform:uppercase;letter-spacing:.02em;line-height:.95}
+.muted{color:var(--muted)}
+.wrap{max-width:720px;margin:0 auto;padding:0 max(16px, env(safe-area-inset-right, 0px)) 0 max(16px, env(safe-area-inset-left, 0px))}
+header.site{padding-top:calc(16px + env(safe-area-inset-top, 0px))}
+.brand{display:flex;align-items:center;gap:14px}
+.brand img{width:76px;height:auto}
+.brand h1{margin:0;font-size:44px;text-wrap:balance}
+@media (max-width:460px){.brand h1{font-size:32px}.brand img{width:62px}}
+.brand p{margin:2px 0 0;color:var(--muted);font-size:15px}
+nav.tabs{position:sticky;top:0;z-index:10;background:rgba(18,17,16,.95);backdrop-filter:blur(8px);border-bottom:1px solid var(--line);margin-top:14px}
+nav.tabs .wrap{display:flex;gap:6px;padding-block:10px}
+nav.tabs a{flex:1;text-align:center;padding:9px 6px 5px;border-radius:11px;background:var(--panel);border:1px solid var(--line);font-family:var(--display);font-size:22px;text-transform:uppercase;color:var(--muted);text-decoration:none}
+nav.tabs a[aria-current="page"]{background:var(--red);border-color:var(--red);color:#fff}
+main{padding-block:18px 60px}
+h2.sec{font-size:40px;color:var(--red);margin:6px 0 4px}
+.rule{height:3px;background:var(--red);border-radius:2px;margin:6px 0 10px}
+.lead{color:var(--muted);margin:0 0 14px}
+.panel{background:var(--panel);border:1px solid var(--line);border-radius:16px;padding:16px}
+.hours{display:grid;grid-template-columns:auto 1fr;gap:4px 14px;font-size:16px}
+.hours dt{color:var(--muted)}.hours dd{margin:0;font-weight:600}
+.btn{display:inline-flex;align-items:center;justify-content:center;gap:8px;padding:12px 16px 8px;border-radius:12px;font-family:var(--display);font-size:24px;text-transform:uppercase;text-decoration:none}
+.btn.primary{background:var(--red);color:#fff}
+.btn.primary:disabled{background:var(--line);color:var(--muted);cursor:not-allowed}
+.btn.ghost{border:1px solid var(--line);background:var(--card);color:var(--cream)}
+.btn.block{width:100%}
+.msg{border-radius:12px;padding:10px 12px;font-weight:600}
+.msg.err{background:var(--red-soft);color:#ffc2c5}
+.msg.ok{background:var(--green-soft);color:#b5ecc8}
+.msg.warn{background:var(--amber-soft);color:#ffd99a}
+.spin{width:26px;height:26px;border:3px solid var(--line);border-top-color:var(--red);border-radius:50%;animation:spin 1s linear infinite;margin:30px auto}
+@keyframes spin{to{transform:rotate(360deg)}}
+[hidden]{display:none!important}
+
+/* Carte */
+.subtabs{display:flex;gap:6px;flex-wrap:wrap;margin-bottom:6px}
+.subtabs button{padding:6px 12px;border-radius:999px;border:1px solid var(--line);color:var(--muted);font-weight:700}
+.subtabs button[aria-pressed="true"]{border-color:var(--cream);color:var(--cream)}
+.cat{padding-top:16px}
+.cat h3{margin:0;font-size:34px;color:var(--red)}
+.cat .sub{color:var(--muted);font-style:italic;font-size:15px}
+.item{display:flex;gap:12px;align-items:baseline;padding:10px 0;border-bottom:1px solid var(--line)}
+.item .i{flex:1;min-width:0}
+.item .n{font-weight:700;text-transform:uppercase}
+.item .ds{color:var(--muted);font-style:italic;font-size:14.5px;text-transform:uppercase}
+.item .p{font-weight:700;white-space:nowrap;font-variant-numeric:tabular-nums}
+.item .p small{font-weight:500;color:var(--muted);font-size:13px}
+.legal{color:var(--muted);font-size:13px;margin-top:18px}
+
+/* Formulaires */
+form{display:flex;flex-direction:column;gap:12px}
+.fg{display:flex;flex-direction:column;gap:5px}
+.fg label,.lbl{font-size:15px;color:var(--muted);font-weight:600}
+.row2{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:10px}
+@media (max-width:460px){.row2{grid-template-columns:minmax(0,1fr)}}
+input[type=text],input[type=tel],input[type=email],input[type=date],input[type=password],textarea{width:100%;background:var(--card);border:1px solid var(--line);border-radius:11px;padding:11px 12px;font-size:17px}
+textarea{min-height:64px;resize:vertical}
+.stepper{display:flex;align-items:center;gap:8px}
+.stepper button{width:46px;height:46px;border-radius:11px;background:var(--card);border:1px solid var(--line);font-size:24px}
+.stepper output{min-width:56px;text-align:center;font-family:var(--display);font-size:34px}
+.slots{display:flex;flex-direction:column;gap:12px}
+.slotgrp h4{margin:0 0 6px;font-size:22px;font-family:var(--display);text-transform:uppercase;color:var(--muted)}
+.chips{display:flex;flex-wrap:wrap;gap:7px}
+.slot{min-width:72px;padding:9px 10px 6px;border-radius:10px;border:1px solid var(--line);background:var(--card);font-family:var(--display);font-size:22px;font-variant-numeric:tabular-nums}
+.slot.demande{border-style:dashed;border-color:var(--amber)}
+.slot:disabled{opacity:.3;cursor:not-allowed;text-decoration:line-through}
+.slot[aria-pressed="true"]{background:var(--red);border-color:var(--red);color:#fff}
+.check{display:flex;gap:10px;align-items:flex-start;font-size:15px}
+.check input{width:20px;height:20px;margin-top:2px;flex:none;accent-color:var(--red)}
+.done{text-align:center}
+.done .ref{font-family:var(--display);font-size:54px;letter-spacing:.12em;color:var(--red)}
+
+/* Carte fidélité */
+.loyal{background:linear-gradient(135deg,#2a0d0f,#141110 60%);border:1px solid #5a1c20;border-radius:20px;padding:18px;display:grid;grid-template-columns:minmax(0,1fr) auto;gap:14px;align-items:center}
+.loyal .pts{font-family:var(--display);font-size:72px;line-height:.85}
+.loyal .num{font-family:ui-monospace,Menlo,monospace;letter-spacing:.12em;font-size:15px;color:var(--muted)}
+.qrbox{background:#fff;padding:10px;border-radius:12px;width:156px;height:156px}
+.qrbox svg{width:136px;height:136px;display:block}
+@media (max-width:460px){.loyal{grid-template-columns:minmax(0,1fr)}.qrbox{justify-self:center;width:196px;height:196px}.qrbox svg{width:176px;height:176px}}
+.seg{display:flex;gap:6px;margin-bottom:12px}
+.seg button{flex:1;padding:9px;border-radius:11px;border:1px solid var(--line);font-weight:700;color:var(--muted)}
+.seg button[aria-pressed="true"]{border-color:var(--cream);color:var(--cream)}
+.hist{display:flex;flex-direction:column}
+.hist div{display:flex;justify-content:space-between;gap:10px;padding:9px 0;border-bottom:1px solid var(--line);font-size:15.5px}
+.hist b{font-variant-numeric:tabular-nums;white-space:nowrap}
+.hist .neg{color:var(--muted)}
+.enseignes{display:flex;flex-wrap:wrap;gap:6px}
+.enseignes span{padding:4px 9px;border-radius:999px;background:var(--card);border:1px solid var(--line);font-size:14px}
+footer{color:var(--muted);font-size:14px;border-top:1px solid var(--line);padding-block:18px calc(18px + env(safe-area-inset-bottom, 0px))}
+</style>
+</head>
+<body>
+<header class="site wrap">
+  <div class="brand">
+    <img src="logo_on_dark.png" alt="BUFFALO Sports Bar">
+    <div><h1 class="d">Sports bar &amp; brasserie</h1><p>Centre commercial NOVA · Hyper U · Païta</p></div>
+  </div>
+</header>
+<nav class="tabs" aria-label="Sections"><div class="wrap">
+  <a href="#carte" data-v="carte">La carte</a><a href="#reserver" data-v="reserver">Réserver</a><a href="#compte" data-v="compte">Fidélité</a>
+</div></nav>
+<main class="wrap" id="main"><div class="spin"></div></main>
+<footer><div class="wrap">BUFFALO Sports Bar · Centre commercial NOVA, Hyper U, Païta · Cuisine 11h–13h30 et 18h30–21h30, petit-déjeuner samedi et dimanche 8h–11h.<br>L'abus d'alcool est dangereux pour la santé, à consommer avec modération.</div></footer>
+
+<script>
+const CFG = window.BUFFALO;
+const $ = (s, el=document) => el.querySelector(s);
+const esc = s => String(s ?? "").replace(/[&<>"']/g, c => ({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c]));
+const fmt = n => (n||0).toLocaleString("fr-FR").replace(/ | /g," ") + " F";
+const ls = { get(k){ try { return localStorage.getItem(k); } catch(e) { return null; } }, set(k,v){ try { v == null ? localStorage.removeItem(k) : localStorage.setItem(k,v); } catch(e) {} } };
+async function rpc(fn, args={}) {
+  const r = await fetch(`${CFG.SUPABASE_URL}/rest/v1/rpc/${fn}`, { method:"POST", headers:{ apikey:CFG.SUPABASE_KEY, "Content-Type":"application/json" }, body: JSON.stringify(args) });
+  const j = await r.json().catch(() => null);
+  if (!r.ok) throw new Error(j?.message || "Connexion impossible, réessayez.");
+  return j;
+}
+function todayNC(){ return new Intl.DateTimeFormat("en-CA", { timeZone:"Pacific/Noumea" }).format(new Date()); }
+function addDays(d,k){ const x = new Date(d + "T12:00:00Z"); x.setUTCDate(x.getUTCDate() + k); return x.toISOString().slice(0,10); }
+function dayLabel(d){ return new Date(String(d).slice(0,10) + "T12:00:00Z").toLocaleDateString("fr-FR", { weekday:"long", day:"numeric", month:"long", timeZone:"UTC" }); }
+const TOKEN = () => ls.get("buffalo_token");
+
+/* ---------- Routage ---------- */
+const VIEWS = { carte: viewCarte, reserver: viewReserver, compte: viewCompte };
+function route(){
+  const v = (location.hash || "#carte").slice(1);
+  const name = VIEWS[v] ? v : "carte";
+  document.querySelectorAll("nav.tabs a").forEach(a => a.dataset.v === name ? a.setAttribute("aria-current","page") : a.removeAttribute("aria-current"));
+  VIEWS[name]();
+  scrollTo({ top: 0 });
+}
+addEventListener("hashchange", route);
+
+/* ---------- La carte ---------- */
+let MENU = null, MSEC = "À la carte";
+async function viewCarte(){
+  const m = $("#main");
+  if (!MENU) { m.innerHTML = `<div class="spin"></div>`; try { MENU = await rpc("get_menu"); } catch(e) { m.innerHTML = `<div class="msg err">${esc(e.message)}</div>`; return; } }
+  const sections = [...new Set(MENU.categories.map(c => c.section))];
+  const cats = MENU.categories.filter(c => c.section === MSEC);
+  m.innerHTML = `<h2 class="d sec">La carte</h2><p class="lead">Prix en francs CFP, TGC incluse. À table, scannez le QR code pour commander et payer depuis votre téléphone.</p>
+    <div class="subtabs">${sections.map(s => `<button data-s="${esc(s)}" aria-pressed="${s === MSEC}">${esc(s)}</button>`).join("")}</div>
+    ${cats.map(c => `<section class="cat"><h3 class="d">${esc(c.name)}</h3>${c.subtitle ? `<div class="sub">${esc(c.subtitle)}</div>` : ""}<div class="rule"></div>
+      ${c.items.map(i => { const from = i.options.some(g => g.choices.some(x => x.delta));
+        return `<div class="item"><div class="i"><div class="n">${esc(i.name)}</div>${i.description ? `<div class="ds">${esc(i.description)}</div>` : ""}</div><div class="p">${from ? "<small>dès </small>" : ""}${fmt(i.price)}</div></div>`; }).join("")}</section>`).join("")}
+    ${MSEC === "Boissons" ? `<p class="legal">L'abus d'alcool est dangereux pour la santé, à consommer avec modération. Vente d'alcool interdite aux mineurs.</p>` : ""}
+    <p class="legal">Les pizzas sont servies par notre voisin La Planche À Pizza.</p>`;
+  m.querySelectorAll("[data-s]").forEach(b => b.onclick = () => { MSEC = b.dataset.s; viewCarte(); });
+}
+
+/* ---------- Réserver ---------- */
+const R = { date: todayNC(), covers: 2, time: null, dispo: null, me: null };
+async function viewReserver(){
+  const m = $("#main");
+  if (TOKEN() && !R.me) { try { R.me = await rpc("client_me", { p_token: TOKEN() }); } catch(e) {} }
+  m.innerHTML = `<h2 class="d sec">Réserver une table</h2>
+    <p class="lead">Jusqu'à 8 personnes, votre table est confirmée tout de suite. Pour les groupes et les soirs de match, nous validons votre demande et vous répondons par SMS.</p>
+    <div class="panel"><form id="rf" novalidate>
+      <div class="row2">
+        <div class="fg"><label for="r-date">Date</label><input type="date" id="r-date" value="${R.date}" min="${todayNC()}" max="${addDays(todayNC(), 60)}"></div>
+        <div class="fg"><span class="lbl" id="r-cov-l">Personnes</span><div class="stepper" role="group" aria-labelledby="r-cov-l"><button type="button" id="r-minus" aria-label="Moins">−</button><output id="r-cov">${R.covers}</output><button type="button" id="r-plus" aria-label="Plus">+</button></div></div>
+      </div>
+      <div id="r-slots"><div class="spin"></div></div>
+      <div class="row2">
+        <div class="fg"><label for="r-name">Nom</label><input type="text" id="r-name" autocomplete="name" value="${esc(R.me ? R.me.prenom + " " + R.me.nom : "")}"></div>
+        <div class="fg"><label for="r-phone">Téléphone</label><input type="tel" id="r-phone" autocomplete="tel" inputmode="tel" placeholder="Ex. : 90 12 34" value="${esc(R.me?.telephone || "")}"></div>
+      </div>
+      <div class="fg"><label for="r-email">E-mail (facultatif)</label><input type="email" id="r-email" autocomplete="email" value="${esc(R.me?.email || "")}"></div>
+      <div class="fg"><label for="r-note">Une précision ? (anniversaire, chaise bébé, terrasse…)</label><textarea id="r-note" maxlength="300"></textarea></div>
+      <div id="r-msg"></div>
+      <button class="btn primary block" type="submit" id="r-go">Réserver</button>
+    </form></div>
+    <h2 class="d sec" style="font-size:30px;margin-top:26px">Retrouver ou annuler</h2>
+    <div class="panel"><form id="ff" novalidate><div class="row2">
+      <div class="fg"><label for="f-ref">Référence</label><input type="text" id="f-ref" autocapitalize="characters" placeholder="Ex. : K7M2QD"></div>
+      <div class="fg"><label for="f-phone">Téléphone</label><input type="tel" id="f-phone" inputmode="tel"></div></div>
+      <div id="f-res"></div><button class="btn ghost block" type="submit">Retrouver ma réservation</button></form></div>`;
+  $("#r-date").onchange = e => { R.date = e.target.value; R.time = null; loadSlots(); };
+  $("#r-minus").onclick = () => { if (R.covers > 1) { R.covers--; $("#r-cov").textContent = R.covers; loadSlots(); } };
+  $("#r-plus").onclick = () => { if (R.covers < 40) { R.covers++; $("#r-cov").textContent = R.covers; loadSlots(); } };
+  $("#rf").onsubmit = e => { e.preventDefault(); book(); };
+  $("#ff").onsubmit = e => { e.preventDefault(); findResa(); };
+  loadSlots();
+}
+let slotReq = 0;
+async function loadSlots(){
+  const box = $("#r-slots"), my = ++slotReq; box.innerHTML = `<div class="spin"></div>`;
+  let d; try { d = await rpc("resa_dispo", { p_date: R.date, p_covers: R.covers }); } catch(e) { box.innerHTML = `<div class="msg err">${esc(e.message)}</div>`; return; }
+  if (my !== slotReq) return;
+  R.dispo = d;
+  if (d.error) { box.innerHTML = `<div class="msg warn">${esc(d.error)}</div>`; return; }
+  const groups = { matin: "Petit-déjeuner", midi: "Déjeuner", soir: "Soirée" };
+  const slots = d.slots || [];
+  if (R.time && !slots.some(s => s.time === R.time && (s.etat === "ok" || s.etat === "demande"))) R.time = null;
+  box.innerHTML = `${d.ferme ? `<div class="msg warn">Nous sommes fermés ce jour-là.</div>` : ""}${d.match ? `<div class="msg warn">Soir de match${d.label ? " : " + esc(d.label) : ""}. Les réservations du soir sont sur demande.</div>` : ""}
+    <div class="slots">${Object.entries(groups).map(([k, lbl]) => { const ss = slots.filter(s => s.svc === k); if (!ss.length) return "";
+      return `<div class="slotgrp"><h4>${lbl}</h4><div class="chips">${ss.map(s => `<button type="button" class="slot ${s.etat}" data-t="${s.time}" aria-pressed="${s.time === R.time}" ${s.etat === "ok" || s.etat === "demande" ? "" : "disabled"} title="${s.etat === "demande" ? "Sur demande" : s.etat === "complet" ? "Complet" : s.etat === "passe" ? "Passé" : "Disponible"}">${s.time.replace(":", "h")}</button>`).join("")}</div></div>`; }).join("")}</div>
+    <p class="muted" style="font-size:14px;margin:8px 0 0">Bordure orange : sur demande, nous vous confirmons par SMS. Barré : complet.</p>`;
+  box.querySelectorAll("[data-t]").forEach(b => b.onclick = () => { R.time = b.dataset.t; box.querySelectorAll("[data-t]").forEach(x => x.setAttribute("aria-pressed", x.dataset.t === R.time)); });
+}
+async function book(){
+  const msg = $("#r-msg"), go = $("#r-go"); msg.innerHTML = "";
+  if (!R.time) { msg.innerHTML = `<div class="msg err">Choisissez un horaire.</div>`; return; }
+  go.disabled = true;
+  try {
+    const r = await rpc("book_online", { p_date: R.date, p_time: R.time, p_covers: R.covers, p_name: $("#r-name").value, p_phone: $("#r-phone").value,
+      p_email: $("#r-email").value || null, p_note: $("#r-note").value || null, p_client_token: TOKEN() });
+    if (r.error) { msg.innerHTML = `<div class="msg err">${esc(r.error)}</div>`; go.disabled = false; return; }
+    ls.set("buffalo_last_resa", JSON.stringify({ ref: r.ref, phone: $("#r-phone").value }));
+    $("#main").innerHTML = `<div class="panel done">
+      <div class="${r.status === "confirmee" ? "msg ok" : "msg warn"}">${r.status === "confirmee" ? "Votre table est réservée. Un SMS de confirmation part sur votre téléphone." : "Demande envoyée. Nous vous répondons par SMS très vite."}</div>
+      <p style="text-transform:capitalize;font-size:20px;margin:16px 0 4px"><b>${dayLabel(r.date)}</b> à <b>${r.time.replace(":", "h")}</b> · ${r.covers} personne${r.covers > 1 ? "s" : ""}</p>
+      <p class="muted" style="margin:14px 0 0">Votre référence, à garder pour modifier ou annuler :</p><div class="ref">${esc(r.ref)}</div>
+      <p class="muted" style="font-size:14px">Un empêchement ? Annulez en ligne jusqu'à une heure avant, avec cette référence et votre numéro.</p>
+      ${TOKEN() ? "" : `<a class="btn ghost block" href="#compte" style="margin-top:10px">Créer ma carte fidélité</a>`}
+      <a class="btn ghost block" href="#carte" style="margin-top:8px">Voir la carte</a></div>`;
+  } catch(e) { msg.innerHTML = `<div class="msg err">${esc(e.message)}</div>`; go.disabled = false; }
+}
+const STATUS_TXT = { demande: "En attente de confirmation", confirmee: "Confirmée", annulee: "Annulée", refusee: "Refusée, merci de nous appeler", arrivee: "Vous êtes installés", terminee: "Terminée", noshow: "Non honorée" };
+async function findResa(){
+  const box = $("#f-res"), ref = $("#f-ref").value, ph = $("#f-phone").value;
+  box.innerHTML = "";
+  let r; try { r = await rpc("resa_get", { p_ref: ref, p_phone: ph }); } catch(e) { box.innerHTML = `<div class="msg err">${esc(e.message)}</div>`; return; }
+  if (!r) { box.innerHTML = `<div class="msg err">Réservation introuvable. Vérifiez la référence et le numéro.</div>`; return; }
+  box.innerHTML = `<div class="msg ${r.status === "confirmee" ? "ok" : r.status === "demande" ? "warn" : "err"}"><span style="text-transform:capitalize">${dayLabel(r.date)}</span> à ${r.time.replace(":", "h")} · ${r.covers} pers. · ${STATUS_TXT[r.status] || r.status}</div>
+    ${r.annulable ? `<button type="button" class="btn ghost block" id="f-cancel" style="margin-top:8px">Annuler cette réservation</button>` : ""}`;
+  const c = $("#f-cancel"); if (c) c.onclick = async () => {
+    if (c.dataset.sure !== "1") { c.dataset.sure = "1"; c.textContent = "Confirmer l'annulation"; return; }
+    const x = await rpc("resa_cancel", { p_ref: ref, p_phone: ph }).catch(e => ({ error: e.message }));
+    box.innerHTML = x.error ? `<div class="msg err">${esc(x.error)}</div>` : `<div class="msg ok">Réservation annulée. À bientôt au BUFFALO.</div>`;
+  };
+}
+
+/* ---------- Carte fidélité ---------- */
+let ACC = "login";
+async function viewCompte(){
+  const m = $("#main");
+  if (TOKEN()) {
+    m.innerHTML = `<div class="spin"></div>`;
+    let me, resas;
+    try { [me, resas] = await Promise.all([rpc("client_me", { p_token: TOKEN() }), rpc("client_resas", { p_token: TOKEN() })]); } catch(e) { m.innerHTML = `<div class="msg err">${esc(e.message)}</div>`; return; }
+    if (!me) { ls.set("buffalo_token", null); return viewCompte(); }
+    R.me = me;
+    let ret = null; try { ret = sessionStorage.getItem("buffalo_return"); sessionStorage.removeItem("buffalo_return"); } catch(e) {}
+    if (ret && /^\/?table\.html\?t=\d+/.test(ret.replace(location.origin, "").replace(/^\//, ""))) { location.href = ret; return; }
+    const b = me.bareme;
+    const TYPE = { gain: "Achat", utilisation: "Bon utilisé", annulation: "Correction", ajustement: "Ajustement" };
+    m.innerHTML = `<h2 class="d sec">Bonjour ${esc(me.prenom)}</h2>
+      <div class="loyal">
+        <div><div class="muted" style="font-weight:700;text-transform:uppercase;letter-spacing:.06em;font-size:13px">Ma carte fidélité</div>
+          <div class="pts">${me.points}</div><div style="font-weight:700">points</div>
+          <div class="num" style="margin-top:10px">${esc(me.carte.replace(/(.{2})(.{4})(.{4})/, "$1 $2 $3"))}</div></div>
+        <div class="qrbox" id="qr" aria-label="QR code de ma carte"></div>
+      </div>
+      <p class="muted" style="margin:10px 2px 0;font-size:15px">Présentez ce QR code en caisse : ${b.f_par_point === 1 ? "chaque franc" : `chaque tranche de ${fmt(b.f_par_point)}`} dépensé${b.f_par_point === 1 ? "" : "e"} hors alcool vous rapporte 1 point. ${b.seuil_points ? `<b>${b.seuil_points} points = un bon de ${fmt(b.valeur_bon)}</b> à utiliser dans nos restaurants.` : "Les récompenses seront annoncées très bientôt."} À table au BUFFALO, vos commandes par QR code sont créditées automatiquement.</p>
+      <h3 class="d" style="font-size:26px;margin:22px 0 8px">Valable dans nos restaurants</h3>
+      <div class="enseignes">${(me.enseignes || []).map(n => `<span>${esc(n)}</span>`).join("")}</div>
+      <h3 class="d" style="font-size:26px;margin:22px 0 8px">Mes réservations</h3>
+      ${resas?.length ? `<div class="hist">${resas.map(r => `<div><span style="text-transform:capitalize">${dayLabel(r.date)} · ${r.time.replace(":", "h")} · ${r.covers} pers.</span><b>${STATUS_TXT[r.status]}</b></div>`).join("")}</div>` : `<p class="muted">Aucune réservation à venir. <a href="#reserver" style="color:var(--cream)">Réserver une table</a></p>`}
+      <h3 class="d" style="font-size:26px;margin:22px 0 8px">Historique</h3>
+      ${me.mouvements.length ? `<div class="hist">${me.mouvements.map(x => `<div><span>${new Date(x.date).toLocaleDateString("fr-FR", { day:"numeric", month:"short", timeZone:"Pacific/Noumea" })} · ${esc(x.enseigne)} · ${TYPE[x.type] || x.type}${x.montant && x.type === "gain" ? ` (${fmt(x.montant)})` : ""}</span><b class="${x.points < 0 ? "neg" : ""}">${x.points > 0 ? "+" : ""}${x.points}</b></div>`).join("")}</div>` : `<p class="muted">Vos points apparaîtront ici après votre premier passage.</p>`}
+      <button class="btn ghost block" id="logout" style="margin-top:24px">Me déconnecter</button>
+      <p class="muted" style="font-size:14px">Code oublié ? Demandez au comptoir de l'un de nos restaurants de le réinitialiser.</p>`;
+    try { const q = qrcode(0, "M"); q.addData(me.carte); q.make(); $("#qr").innerHTML = q.createSvgTag({ cellSize: 6, margin: 0, scalable: true }); } catch(e) { $("#qr").textContent = me.carte; }
+    $("#logout").onclick = async () => { await rpc("client_logout", { p_token: TOKEN() }).catch(() => {}); ls.set("buffalo_token", null); R.me = null; viewCompte(); };
+    return;
+  }
+  m.innerHTML = `<h2 class="d sec">Ma carte fidélité</h2>
+    <p class="lead">Une seule carte pour cumuler des points au BUFFALO, chez Chamas Tacos (Nouméa et Dumbéa), au Columbus Café et à La Planche À Pizza. Les points se gagnent sur vos achats hors alcool.</p>
+    <div class="seg"><button data-a="login" aria-pressed="${ACC === "login"}">J'ai déjà une carte</button><button data-a="signup" aria-pressed="${ACC === "signup"}">Créer ma carte</button></div>
+    <div class="panel">${ACC === "login" ? `<form id="lf" novalidate>
+        <div class="fg"><label for="l-tel">Téléphone</label><input type="tel" id="l-tel" inputmode="tel" autocomplete="tel"></div>
+        <div class="fg"><label for="l-code">Code secret (6 chiffres)</label><input type="password" id="l-code" inputmode="numeric" maxlength="6" autocomplete="current-password"></div>
+        <div id="l-msg"></div><button class="btn primary block" type="submit">Me connecter</button>
+        <p class="muted" style="font-size:14px;margin:0">Code oublié ? Le comptoir de l'un de nos restaurants peut le réinitialiser.</p></form>`
+    : `<form id="sf" novalidate>
+        <div class="row2"><div class="fg"><label for="s-prenom">Prénom</label><input type="text" id="s-prenom" autocomplete="given-name"></div>
+          <div class="fg"><label for="s-nom">Nom</label><input type="text" id="s-nom" autocomplete="family-name"></div></div>
+        <div class="row2"><div class="fg"><label for="s-tel">Téléphone</label><input type="tel" id="s-tel" inputmode="tel" autocomplete="tel" placeholder="Ex. : 90 12 34"></div>
+          <div class="fg"><label for="s-email">E-mail (facultatif)</label><input type="email" id="s-email" autocomplete="email"></div></div>
+        <div class="row2"><div class="fg"><label for="s-code">Choisissez un code (6 chiffres)</label><input type="password" id="s-code" inputmode="numeric" maxlength="6" autocomplete="new-password"></div>
+          <div class="fg"><label for="s-code2">Confirmez le code</label><input type="password" id="s-code2" inputmode="numeric" maxlength="6" autocomplete="new-password"></div></div>
+        <label class="check"><input type="checkbox" id="s-cgu"><span>J'accepte que mes coordonnées et mes achats soient utilisés pour gérer ma carte fidélité dans les restaurants listés ci-dessus. Je peux demander leur suppression à tout moment au comptoir.</span></label>
+        <label class="check"><input type="checkbox" id="s-optin"><span>Je souhaite recevoir les offres et jeux concours par SMS (facultatif).</span></label>
+        <div id="s-msg"></div><button class="btn primary block" type="submit">Créer ma carte</button></form>`}</div>`;
+  m.querySelectorAll("[data-a]").forEach(b => b.onclick = () => { ACC = b.dataset.a; viewCompte(); });
+  const lf = $("#lf"); if (lf) lf.onsubmit = async e => { e.preventDefault(); const msg = $("#l-msg"); msg.innerHTML = "";
+    try { const r = await rpc("client_login", { p_telephone: $("#l-tel").value, p_code: $("#l-code").value });
+      if (r.error) { msg.innerHTML = `<div class="msg err">${esc(r.error)}</div>`; return; }
+      ls.set("buffalo_token", r.token); viewCompte(); } catch(err) { msg.innerHTML = `<div class="msg err">${esc(err.message)}</div>`; } };
+  const sf = $("#sf"); if (sf) sf.onsubmit = async e => { e.preventDefault(); const msg = $("#s-msg"); msg.innerHTML = "";
+    if (!$("#s-cgu").checked) { msg.innerHTML = `<div class="msg err">Cochez la case d'accord pour créer votre carte.</div>`; return; }
+    if ($("#s-code").value !== $("#s-code2").value) { msg.innerHTML = `<div class="msg err">Les deux codes ne correspondent pas.</div>`; return; }
+    try { const r = await rpc("client_signup", { p_prenom: $("#s-prenom").value, p_nom: $("#s-nom").value, p_telephone: $("#s-tel").value, p_email: $("#s-email").value || null, p_code: $("#s-code").value, p_optin: $("#s-optin").checked });
+      ls.set("buffalo_token", r.token); viewCompte(); } catch(err) { msg.innerHTML = `<div class="msg err">${esc(err.message)}</div>`; } };
+}
+
+route();
+</script>
+</body>
+</html>

@@ -1,0 +1,271 @@
+<!doctype html>
+<html lang="fr">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<meta name="robots" content="noindex">
+<title>Caisse fidélité</title>
+<link rel="icon" href="logo_on_dark.png">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Teko:wght@500;600&family=Barlow+Condensed:wght@400;500;600;700&display=swap" rel="stylesheet">
+<script src="config.js"></script>
+<script src="vendor/jsQR.js"></script>
+<style>
+/* Écran de caisse fidélité commun aux 5 restaurants : une colonne, gros boutons pour tablette ou téléphone. */
+:root{
+  --bg:#121110; --panel:#1b1918; --card:#231f1d; --line:#38322e; --red:#e3232b; --red-soft:rgba(227,35,43,.18);
+  --cream:#f6eedd; --muted:#a99f93; --green:#3fae63; --green-soft:rgba(63,174,99,.18); --amber:#e9a53a; --amber-soft:rgba(233,165,58,.18);
+  --display:"Teko","Oswald","Arial Narrow",sans-serif; --body:"Barlow Condensed","Arial Narrow",system-ui,sans-serif; color-scheme:dark;
+}
+*{box-sizing:border-box}
+html,body{margin:0;background:var(--bg);color:var(--cream)}
+body{font-family:var(--body);font-size:18px;line-height:1.3;padding:calc(14px + env(safe-area-inset-top,0px)) max(16px, env(safe-area-inset-right,0px)) 40px max(16px, env(safe-area-inset-left,0px))}
+button,input,select{font:inherit;color:inherit}
+button{cursor:pointer;border:0;background:none}
+:focus-visible{outline:2px solid var(--cream);outline-offset:2px}
+[hidden]{display:none!important}
+.d{font-family:var(--display);text-transform:uppercase;letter-spacing:.02em;line-height:.95}
+.muted{color:var(--muted)}
+.wrap{max-width:640px;margin:0 auto;display:flex;flex-direction:column;gap:14px}
+.top{display:flex;align-items:center;gap:12px;flex-wrap:wrap}
+.top img{width:52px}
+.top .t{flex:1;min-width:180px}
+.top h1{margin:0;font-size:34px}
+.ghost{border:1px solid var(--line);border-radius:10px;padding:7px 12px;font-weight:700;color:var(--muted)}
+.tabs{display:flex;gap:6px}
+.tabs button{flex:1;padding:9px 6px 5px;border-radius:11px;background:var(--panel);border:1px solid var(--line);font-family:var(--display);font-size:23px;text-transform:uppercase;color:var(--muted)}
+.tabs button[aria-pressed="true"]{background:var(--red);border-color:var(--red);color:#fff}
+.panel{background:var(--panel);border:1px solid var(--line);border-radius:16px;padding:16px;display:flex;flex-direction:column;gap:12px}
+.btn{display:inline-flex;align-items:center;justify-content:center;gap:8px;padding:13px 16px 9px;border-radius:12px;font-family:var(--display);font-size:26px;text-transform:uppercase}
+.btn.primary{background:var(--red);color:#fff}
+.btn.green{background:var(--green);color:#06140b}
+.btn.ghostb{border:1px solid var(--line);background:var(--card)}
+.btn:disabled{background:var(--line);color:var(--muted);cursor:not-allowed}
+.btn.block{width:100%}
+.row{display:flex;gap:10px;align-items:center}
+.fg{display:flex;flex-direction:column;gap:5px}
+.fg label{font-size:15px;color:var(--muted);font-weight:600}
+input[type=text],input[type=tel],input[type=password],input[type=number],select{width:100%;background:var(--card);border:1px solid var(--line);border-radius:11px;padding:12px;font-size:20px}
+input.big{font-family:var(--display);font-size:40px;padding:8px 12px 4px;text-align:right;font-variant-numeric:tabular-nums}
+.msg{border-radius:12px;padding:10px 12px;font-weight:600}
+.msg.err{background:var(--red-soft);color:#ffc2c5}
+.msg.ok{background:var(--green-soft);color:#b5ecc8}
+.msg.warn{background:var(--amber-soft);color:#ffd99a}
+.video{position:relative;border-radius:14px;overflow:hidden;background:#000;aspect-ratio:4/3;max-width:100%}
+.video video{width:100%;height:100%;object-fit:cover;display:block}
+.video .aim{position:absolute;inset:18%;border:3px solid var(--red);border-radius:16px;box-shadow:0 0 0 999px rgba(0,0,0,.35)}
+.client{display:grid;grid-template-columns:minmax(0,1fr) auto;gap:6px 14px;align-items:end;background:linear-gradient(135deg,#2a0d0f,#141110 60%);border:1px solid #5a1c20;border-radius:16px;padding:16px}
+.client .nm{font-size:30px}
+.client .pts{font-family:var(--display);font-size:64px;line-height:.85;text-align:right;font-variant-numeric:tabular-nums}
+.preview{font-size:18px;color:var(--muted)}
+.preview b{color:var(--cream)}
+.login{min-height:80vh;display:grid;place-items:center}
+.login .box{width:min(360px,100%);text-align:center;display:flex;flex-direction:column;gap:10px}
+.login img{width:100px;margin:0 auto}
+.dots{display:flex;gap:12px;justify-content:center;margin:6px 0}
+.dots i{width:15px;height:15px;border-radius:50%;border:2px solid var(--muted)}
+.dots i.on{background:var(--red);border-color:var(--red)}
+.pad{display:grid;grid-template-columns:repeat(3,1fr);gap:10px}
+.pad button{height:62px;border-radius:14px;background:var(--card);border:1px solid var(--line);font-family:var(--display);font-size:32px}
+.lmsg{min-height:22px;color:#ffb6b9;font-weight:600}
+.stats{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:10px}
+.stat{background:var(--card);border-radius:12px;padding:10px 12px}
+.stat b{display:block;font-family:var(--display);font-size:34px;line-height:1;font-variant-numeric:tabular-nums}
+table{width:100%;border-collapse:collapse;font-size:16px}
+td,th{padding:7px 6px;border-bottom:1px solid var(--line);text-align:left}
+th{color:var(--muted);font-weight:600}
+td.n{text-align:right;font-variant-numeric:tabular-nums}
+.toast{position:fixed;left:50%;bottom:calc(24px + env(safe-area-inset-bottom,0px));transform:translateX(-50%);background:var(--cream);color:#151210;padding:11px 18px;border-radius:999px;font-weight:700;opacity:0;transition:opacity .2s;pointer-events:none;z-index:40}
+.toast.on{opacity:1}
+</style>
+</head>
+<body>
+<div id="loginView" class="login"><div class="box">
+  <img src="logo_on_dark.png" alt="">
+  <h1 class="d" style="font-size:38px;margin:4px 0 0">Caisse fidélité</h1>
+  <div class="fg" style="text-align:left"><label for="ens">Restaurant</label><select id="ens"></select></div>
+  <div class="muted">Code PIN du restaurant</div>
+  <div class="dots" id="dots"></div><div class="pad" id="pad"></div><div class="lmsg" id="lmsg"></div>
+</div></div>
+
+<div id="app" class="wrap" hidden>
+  <header class="top"><img src="logo_on_dark.png" alt=""><div class="t"><h1 class="d">Fidélité</h1><div class="muted" id="ensName"></div></div>
+    <a class="ghost" href="plan.html" id="navPlan" hidden>Réservations</a><button class="ghost" id="lock">Verrouiller</button></header>
+  <div class="tabs"><button data-tab="caisse" aria-pressed="true">Caisse</button><button data-tab="gerant" aria-pressed="false">Gérant</button></div>
+  <div id="caisse"></div>
+  <div id="gerant" hidden></div>
+</div>
+<div class="toast" id="toast"></div>
+
+<script>
+const CFG = window.BUFFALO;
+const $ = (s, el=document) => el.querySelector(s);
+const esc = s => String(s ?? "").replace(/[&<>"']/g, c => ({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c]));
+const fmt = n => (n||0).toLocaleString("fr-FR").replace(/ | /g," ") + " F";
+const ls = { get(k){ try { return localStorage.getItem(k); } catch(e) { return null; } }, set(k,v){ try { localStorage.setItem(k,v); } catch(e) {} } };
+const ss = { get(k){ try { return sessionStorage.getItem(k); } catch(e) { return null; } }, set(k,v){ try { sessionStorage.setItem(k,v); } catch(e) {} }, del(k){ try { sessionStorage.removeItem(k); } catch(e) {} } };
+async function rpc(fn, args={}) {
+  const r = await fetch(`${CFG.SUPABASE_URL}/rest/v1/rpc/${fn}`, { method:"POST", headers:{ apikey:CFG.SUPABASE_KEY, "Content-Type":"application/json" }, body: JSON.stringify(args) });
+  const j = await r.json().catch(() => null);
+  if (!r.ok) throw new Error(String(j?.message || "Connexion impossible, réessayez.").replace(/^.*?ERROR:\s*(P0001:\s*)?/, ""));
+  return j;
+}
+function toast(m){ const t = $("#toast"); t.textContent = m; t.classList.add("on"); clearTimeout(t._h); t._h = setTimeout(() => t.classList.remove("on"), 2200); }
+
+/* ---------- Connexion ---------- */
+let ENS = [], E = ls.get("fid_enseigne") || "buffalo", PIN = null, entry = "";
+function drawDots(){ $("#dots").innerHTML = Array.from({ length: Math.max(4, entry.length) }, (_,i) => `<i class="${i < entry.length ? "on" : ""}"></i>`).join(""); }
+$("#pad").innerHTML = ["1","2","3","4","5","6","7","8","9","⌫","0","OK"].map(k => `<button data-k="${k}">${k}</button>`).join("");
+$("#pad").onclick = e => { const k = e.target.dataset?.k; if (!k) return; if (k === "⌫") entry = entry.slice(0,-1); else if (k === "OK") return login(); else if (entry.length < 6) entry += k; drawDots(); };
+document.addEventListener("keydown", e => { if ($("#loginView").hidden || document.activeElement?.tagName === "SELECT") return; if (/^\d$/.test(e.key) && entry.length < 6) entry += e.key; else if (e.key === "Backspace") entry = entry.slice(0,-1); else if (e.key === "Enter") return login(); drawDots(); });
+$("#ens").onchange = e => { E = e.target.value; ls.set("fid_enseigne", E); checkPinSet(); };
+function checkPinSet(){ const en = ENS.find(x => x.id === E); $("#lmsg").textContent = en && !en.pin_set ? "Le PIN de ce restaurant n'est pas encore créé : le gérant le crée dans l'onglet Gérant, depuis le BUFFALO." : ""; }
+async function login(){
+  $("#lmsg").textContent = "";
+  if (entry.length < 4) { $("#lmsg").textContent = "4 chiffres minimum"; return; }
+  try { const ok = await rpc("fid_staff_login", { p_enseigne: E, p_pin: entry });
+    if (!ok) { $("#lmsg").textContent = "Code incorrect"; entry = ""; drawDots(); return; }
+    PIN = entry; entry = ""; ss.set("fid_pin", E + ":" + PIN); enter();
+  } catch(e) { $("#lmsg").textContent = e.message; entry = ""; drawDots(); }
+}
+function lock(){ ss.del("fid_pin"); PIN = null; stopScan(); $("#app").hidden = true; $("#loginView").hidden = false; entry = ""; drawDots(); }
+$("#lock").onclick = lock;
+function enter(){
+  $("#loginView").hidden = true; $("#app").hidden = false;
+  $("#ensName").textContent = ENS.find(x => x.id === E)?.nom || E;
+  $("#navPlan").hidden = E !== "buffalo";
+  renderCaisse();
+}
+document.querySelectorAll("[data-tab]").forEach(b => b.onclick = () => {
+  document.querySelectorAll("[data-tab]").forEach(x => x.setAttribute("aria-pressed", x === b));
+  $("#caisse").hidden = b.dataset.tab !== "caisse"; $("#gerant").hidden = b.dataset.tab !== "gerant";
+  if (b.dataset.tab === "gerant") renderGerant(); else stopScan();
+});
+
+/* ---------- Caisse ---------- */
+let C = null, stream = null, scanning = false;
+function renderCaisse(msg){
+  stopScan();
+  const box = $("#caisse");
+  if (!C) {
+    box.innerHTML = `<div class="panel">
+      <button class="btn primary block" id="scan">Scanner la carte du client</button>
+      <div class="video" id="vid" hidden><video id="video" playsinline muted></video><div class="aim"></div></div>
+      <form id="sf" class="row" novalidate><input type="text" id="q" placeholder="N° de carte ou téléphone" autocomplete="off" autocapitalize="characters"><button class="btn ghostb" type="submit">OK</button></form>
+      <div id="smsg">${msg || ""}</div>
+      <p class="muted" style="margin:0;font-size:15px">Le client affiche sa carte depuis « Ma fidélité » sur le site du BUFFALO. Pas encore de carte ? Il la crée en 1 minute sur ce même site.</p></div>`;
+    $("#scan").onclick = startScan;
+    $("#sf").onsubmit = e => { e.preventDefault(); lookup($("#q").value); };
+    return;
+  }
+  const b = C.bareme, bons = b.seuil_points ? Math.floor(C.points / b.seuil_points) : 0;
+  box.innerHTML = `<div class="client"><div><div class="muted" style="font-size:14px;letter-spacing:.06em;text-transform:uppercase">Carte ${esc(C.carte)} · tél. …${esc(C.telephone_fin)}</div><div class="d nm">${esc(C.prenom)} ${esc(C.nom_initiale)}</div></div><div><div class="pts">${C.points}</div><div class="muted" style="text-align:right">points</div></div></div>
+    <div id="cmsg">${msg || ""}</div>
+    <div class="panel"><h2 class="d" style="margin:0;font-size:28px">Créditer un achat</h2>
+      <div class="fg"><label for="amt">Montant payé hors alcool (F)</label><input type="number" class="big" id="amt" inputmode="numeric" min="1" max="300000" placeholder="0"></div>
+      <div class="preview" id="prev">1 point par tranche de ${fmt(b.f_par_point)}.</div>
+      <button class="btn green block" id="credit" disabled>Créditer</button>
+      <button class="ghost" id="undo" style="align-self:flex-start">Annuler le dernier crédit</button></div>
+    <div class="panel"><h2 class="d" style="margin:0;font-size:28px">Utiliser des points</h2>
+      ${b.seuil_points ? `<div class="preview">${b.seuil_points} points = bon de <b>${fmt(b.valeur_bon)}</b>. ${bons ? `<b>${bons}</b> bon${bons > 1 ? "s" : ""} disponible${bons > 1 ? "s" : ""}.` : "Pas encore assez de points."}</div>
+        ${bons ? `<div class="row"><select id="nb" style="max-width:120px">${Array.from({ length: Math.min(bons, 20) }, (_,i) => `<option value="${i+1}">${i+1}</option>`).join("")}</select><button class="btn primary" id="use" style="flex:1">Utiliser</button></div>` : ""}`
+      : `<div class="msg warn">Le barème des récompenses n'est pas encore fixé (onglet Gérant).</div>`}</div>
+    <div class="panel"><h2 class="d" style="margin:0;font-size:28px">Code oublié</h2>
+      <div class="row"><input type="password" id="nc" inputmode="numeric" maxlength="6" placeholder="Nouveau code choisi par le client"><button class="btn ghostb" id="reset">Changer</button></div></div>
+    <button class="btn ghostb block" id="next">Client suivant</button>`;
+  const amt = $("#amt"), prev = $("#prev"), cr = $("#credit");
+  amt.oninput = () => { const v = Math.floor(+amt.value || 0); const p = Math.floor(v / b.f_par_point); cr.disabled = !(v >= 1 && v <= 300000); prev.innerHTML = v ? `${fmt(v)} → <b>+${p} point${p > 1 ? "s" : ""}</b>` : `1 point par tranche de ${fmt(b.f_par_point)}.`; };
+  cr.onclick = async () => { cr.disabled = true; const r = await call("fid_credit", { p_carte: C.carte, p_montant: Math.floor(+amt.value) }); if (!r) { cr.disabled = false; return; } C = r; renderCaisse(`<div class="msg ok">+${r.gagnes} points crédités. Nouveau solde : ${r.points}.</div>`); };
+  $("#undo").onclick = async e => { const u = e.target; if (u.dataset.sure !== "1") { u.dataset.sure = "1"; u.textContent = "Confirmer l'annulation du dernier crédit"; return; }
+    const r = await call("fid_cancel_last", { p_carte: C.carte }); if (r) { C = r; renderCaisse(`<div class="msg ok">${r.annules} points retirés.</div>`); } };
+  const use = $("#use"); if (use) use.onclick = async () => { const n = +$("#nb").value;
+    if (use.dataset.sure !== "1") { use.dataset.sure = "1"; use.textContent = `Confirmer ${n} bon${n > 1 ? "s" : ""} (${fmt(n * b.valeur_bon)})`; return; }
+    const r = await call("fid_redeem", { p_carte: C.carte, p_bons: n }); if (r) { C = r; renderCaisse(`<div class="msg ok">Remise à appliquer en caisse : <b>${fmt(r.remise)}</b> (${r.utilises} points utilisés).</div>`); } };
+  $("#reset").onclick = async () => { const r = await call("fid_reset_code", { p_carte: C.carte, p_new_code: $("#nc").value }); if (r) { $("#nc").value = ""; $("#cmsg").innerHTML = `<div class="msg ok">Code changé. Le client se reconnecte avec son nouveau code.</div>`; } };
+  $("#next").onclick = () => { C = null; renderCaisse(); };
+}
+async function call(fn, args){
+  try { const r = await rpc(fn, { p_enseigne: E, p_pin: PIN, ...args });
+    if (r?.error === "pin") { lock(); $("#lmsg").textContent = "Session expirée, entrez à nouveau le PIN."; return null; }
+    if (r?.error) { const m = `<div class="msg err">${esc(r.error)}</div>`; const el = $("#cmsg") || $("#smsg"); if (el) el.innerHTML = m; return null; }
+    return r;
+  } catch(e) { const el = $("#cmsg") || $("#smsg"); if (el) el.innerHTML = `<div class="msg err">${esc(e.message)}</div>`; return null; }
+}
+async function lookup(q){
+  q = String(q || "").trim(); if (!q) return;
+  const r = await call("fid_lookup", { p_carte: q }); if (r) { C = r; renderCaisse(); }
+}
+async function startScan(){
+  const vid = $("#vid"), video = $("#video");
+  try { stream = await navigator.mediaDevices.getUserMedia({ video: { facingMode: "environment" } }); }
+  catch(e) { $("#smsg").innerHTML = `<div class="msg err">Caméra indisponible. Autorisez l'accès à la caméra, ou tapez le numéro de carte.</div>`; return; }
+  vid.hidden = false; $("#scan").hidden = true; video.srcObject = stream; await video.play().catch(() => {});
+  scanning = true;
+  const det = ("BarcodeDetector" in window) ? new BarcodeDetector({ formats: ["qr_code"] }) : null;
+  const cv = document.createElement("canvas"), ctx = cv.getContext("2d", { willReadFrequently: true });
+  const tick = async () => {
+    if (!scanning) return;
+    let code = null;
+    try {
+      if (det) { const r = await det.detect(video); code = r[0]?.rawValue; }
+      else if (window.jsQR && video.videoWidth) { cv.width = video.videoWidth; cv.height = video.videoHeight; ctx.drawImage(video, 0, 0); const img = ctx.getImageData(0, 0, cv.width, cv.height); code = jsQR(img.data, img.width, img.height)?.data; }
+    } catch(e) {}
+    if (code && /^BF[A-Z0-9]{8}$/.test(code.trim())) { stopScan(); lookup(code.trim()); return; }
+    requestAnimationFrame(tick);
+  };
+  tick();
+}
+function stopScan(){ scanning = false; if (stream) { stream.getTracks().forEach(t => t.stop()); stream = null; } }
+
+/* ---------- Gérant ---------- */
+let GPIN = null;
+async function renderGerant(msg){
+  const box = $("#gerant");
+  if (!GPIN && E === "buffalo") GPIN = PIN;
+  if (!GPIN) {
+    box.innerHTML = `<div class="panel"><div class="fg"><label for="gp">PIN gérant (PIN équipe du BUFFALO)</label><input type="password" id="gp" inputmode="numeric" maxlength="6"></div><button class="btn primary" id="gok">Ouvrir</button><div id="gmsg">${msg || ""}</div></div>`;
+    $("#gok").onclick = async () => { const p = $("#gp").value; const d = await rpc("fid_admin", { p_pin: p }).catch(() => null); if (!d) { $("#gmsg").innerHTML = `<div class="msg err">PIN incorrect.</div>`; return; } GPIN = p; renderGerant(); };
+    return;
+  }
+  let d; try { d = await rpc("fid_admin", { p_pin: GPIN }); } catch(e) { box.innerHTML = `<div class="msg err">${esc(e.message)}</div>`; return; }
+  if (!d) { GPIN = null; return renderGerant(`<div class="msg err">PIN gérant incorrect.</div>`); }
+  const b = d.bareme;
+  box.innerHTML = `<div class="panel"><h2 class="d" style="margin:0;font-size:28px">Programme</h2>
+      <div class="stats"><div class="stat"><b>${d.clients}</b>clients inscrits</div><div class="stat"><b>${d.nouveaux_30j}</b>nouveaux sur 30 jours</div><div class="stat"><b>${d.points_en_circulation}</b>points en circulation</div><div class="stat"><b>${d.optin_sms}</b>acceptent les SMS</div></div>
+      <div style="overflow-x:auto"><table><thead><tr><th>Restaurant (30 jours)</th><th style="text-align:right">Points gagnés</th><th style="text-align:right">Utilisés</th><th>PIN</th></tr></thead><tbody>
+      ${d.enseignes.map(e => `<tr><td>${esc(e.nom)}</td><td class="n">${e.gains_30j}</td><td class="n">${e.utilises_30j}</td><td>${e.pin_set ? "✓" : "à créer"}</td></tr>`).join("")}</tbody></table></div></div>
+    <div class="panel"><h2 class="d" style="margin:0;font-size:28px">Barème</h2>
+      <div class="fg"><label for="b-f">1 point pour chaque tranche de (F, hors alcool)</label><input type="number" id="b-f" min="1" value="${b.f_par_point}"></div>
+      <div class="row"><div class="fg" style="flex:1"><label for="b-s">Points pour un bon</label><input type="number" id="b-s" min="1" value="${b.seuil_points ?? ""}" placeholder="non fixé"></div>
+        <div class="fg" style="flex:1"><label for="b-v">Valeur du bon (F)</label><input type="number" id="b-v" min="1" value="${b.valeur_bon ?? ""}" placeholder="non fixé"></div></div>
+      <div class="preview" id="b-prev"></div>
+      <button class="btn primary" id="b-save">Enregistrer le barème</button></div>
+    <div class="panel"><h2 class="d" style="margin:0;font-size:28px">PIN des restaurants</h2>
+      <div class="row"><select id="p-e">${d.enseignes.filter(e => e.id !== "buffalo").map(e => `<option value="${e.id}">${esc(e.nom)}</option>`).join("")}</select></div>
+      <div class="row"><input type="password" id="p-n" inputmode="numeric" maxlength="6" placeholder="Nouveau PIN (4 à 6 chiffres)"><button class="btn ghostb" id="p-save">Définir</button></div>
+      <p class="muted" style="margin:0;font-size:15px">Le PIN du BUFFALO est celui de l'écran équipe du bar et se change là-bas.</p></div>
+    <div id="gmsg">${msg || ""}</div>`;
+  const prev = () => { const f = +$("#b-f").value, s = +$("#b-s").value, v = +$("#b-v").value;
+    $("#b-prev").innerHTML = f >= 1 && s >= 1 && v >= 1 ? `Le client récupère <b>${(v / (s * f) * 100).toFixed(1).replace(".", ",")} %</b> de ses achats hors alcool : un bon de ${fmt(v)} après ${fmt(s * f)} d'achats.` : "Sans seuil ni valeur, les clients cumulent des points mais ne peuvent pas encore les utiliser."; };
+  ["b-f","b-s","b-v"].forEach(id => $("#" + id).oninput = prev); prev();
+  $("#b-save").onclick = async () => { try { const s = $("#b-s").value ? +$("#b-s").value : null, v = $("#b-v").value ? +$("#b-v").value : null;
+      await rpc("fid_admin_set_bareme", { p_pin: GPIN, p_f_par_point: +$("#b-f").value, p_seuil: s, p_valeur: v }); renderGerant(`<div class="msg ok">Barème enregistré. Il s'applique aux prochains achats.</div>`); }
+    catch(e) { $("#gmsg").innerHTML = `<div class="msg err">${esc(e.message)}</div>`; } };
+  $("#p-save").onclick = async () => { try { await rpc("fid_admin_set_pin", { p_pin: GPIN, p_enseigne: $("#p-e").value, p_new_pin: $("#p-n").value }); renderGerant(`<div class="msg ok">PIN enregistré. Communiquez-le à l'équipe du restaurant.</div>`); }
+    catch(e) { $("#gmsg").innerHTML = `<div class="msg err">${esc(e.message)}</div>`; } };
+}
+
+/* ---------- Démarrage ---------- */
+(async () => {
+  drawDots();
+  try { ENS = await rpc("fid_enseignes"); } catch(e) { $("#lmsg").textContent = e.message; }
+  if (!ENS.some(x => x.id === E)) E = "buffalo";
+  $("#ens").innerHTML = ENS.map(x => `<option value="${x.id}" ${x.id === E ? "selected" : ""}>${esc(x.nom)}</option>`).join("");
+  checkPinSet();
+  const saved = ss.get("fid_pin");
+  if (saved && saved.startsWith(E + ":")) { const p = saved.slice(E.length + 1); try { if (await rpc("fid_staff_login", { p_enseigne: E, p_pin: p })) { PIN = p; return enter(); } } catch(e) {} }
+})();
+</script>
+</body>
+</html>

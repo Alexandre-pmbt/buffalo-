@@ -1,0 +1,33 @@
+SITE BUFFALO — fichiers à mettre en ligne
+==========================================
+
+Pages
+-----
+index.html      Site public : la carte, la réservation en ligne, la carte fidélité (compte client)
+table.html      Commande à table (adresse des QR codes : table.html?t=112)
+equipe.html     Écrans cuisine / bar et administration (code PIN équipe)
+plan.html       Réservations et plan de salle (même code PIN équipe)
+fidelite.html   Caisse fidélité commune aux 5 restaurants (un PIN par restaurant)
+
+config.js, logo_*.png et le dossier vendor/ doivent rester à côté des pages.
+
+Mise en ligne rapide (gratuite) avec Netlify
+--------------------------------------------
+1. Aller sur https://app.netlify.com/drop et glisser le dossier « site » entier.
+2. Netlify donne une adresse du type https://xxxx.netlify.app : le site fonctionne déjà.
+3. Pour utiliser buffalo.nc : dans Netlify, « Domain management » > ajouter buffalo.nc,
+   puis créer chez le gestionnaire du domaine l'enregistrement DNS indiqué par Netlify.
+Le site doit être en https (Netlify le fait tout seul) : la caméra de la caisse fidélité en a besoin.
+
+À faire avant l'ouverture
+-------------------------
+- Changer le code PIN équipe : equipe.html > Admin > Code PIN équipe.
+- Créer le PIN de chaque restaurant : fidelite.html > Gérant > PIN des restaurants.
+- Fixer le barème de récompense : fidelite.html > Gérant > Barème.
+- Paiement EpayNC : renseigner dans Supabase (Edge Functions > Secrets) EPAYNC_SITE_ID,
+  EPAYNC_KEY_TEST, EPAYNC_KEY_PROD, EPAYNC_CTX_MODE et PUBLIC_SITE_URL (l'adresse du site),
+  puis passer en mode EpayNC dans equipe.html > Admin > Paiement.
+- SMS de réservation : ouvrir un compte Twilio (twilio.com), puis renseigner dans Supabase
+  (Edge Functions > Secrets) TWILIO_ACCOUNT_SID, TWILIO_AUTH_TOKEN et TWILIO_FROM (ex. BUFFALO).
+  Tant que ce n'est pas fait, les SMS sont « simulés » : visibles dans Réservations, rien n'est envoyé.
+- Le mode « Cuisine hors horaires (test) » se coupe automatiquement au passage en paiement EpayNC.

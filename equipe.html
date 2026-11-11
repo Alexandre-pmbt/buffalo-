@@ -1,0 +1,280 @@
+<!doctype html>
+<html lang="fr">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<meta name="robots" content="noindex">
+<title>BUFFALO — Écrans équipe</title>
+<link rel="icon" href="logo_on_dark.png">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Teko:wght@500;600&family=Barlow+Condensed:wght@400;500;600;700&display=swap" rel="stylesheet">
+<script src="config.js"></script>
+<style>
+:root{--bg:#0f0e0d;--bg2:#1b1918;--card:#211e1c;--line:#36312d;--red:#e3232b;--cream:#f6eedd;--muted:#a79f92;--ok:#3fae63;--warn:#e6a23c;--late:#ff5a5f}
+*{box-sizing:border-box}
+html,body{margin:0;background:var(--bg);color:var(--cream);font-family:"Barlow Condensed",system-ui,sans-serif;font-size:18px}
+button{font:inherit;color:inherit;border:0;background:none;cursor:pointer}
+.display{font-family:Teko,sans-serif;text-transform:uppercase;line-height:.95;letter-spacing:.02em}
+.hidden{display:none!important}
+
+/* Connexion */
+.login{min-height:100vh;display:grid;place-items:center;padding:24px}
+.login .box{width:min(360px,100%);text-align:center}
+.login img{width:110px}
+.login h1{font-size:40px;margin:10px 0 4px}
+.dots{display:flex;gap:12px;justify-content:center;margin:18px 0}
+.dots i{width:16px;height:16px;border-radius:50%;border:2px solid var(--muted)}
+.dots i.on{background:var(--red);border-color:var(--red)}
+.pad{display:grid;grid-template-columns:repeat(3,1fr);gap:10px}
+.pad button{height:68px;border-radius:14px;background:var(--card);border:1px solid var(--line);font-family:Teko;font-size:34px}
+.pad button:active{background:var(--line)}
+.msg{min-height:24px;color:var(--late);font-weight:600;margin-top:10px}
+
+/* En-tête */
+.top{display:flex;align-items:center;gap:12px;padding:10px 16px;border-bottom:1px solid var(--line);background:var(--bg2);position:sticky;top:0;z-index:5;flex-wrap:wrap}
+.top img{width:44px}
+.tabs{display:flex;gap:6px;flex:1;flex-wrap:wrap}
+.tabs button{padding:8px 16px 4px;border-radius:10px;background:var(--card);border:1px solid var(--line);font-family:Teko;font-size:24px;text-transform:uppercase;color:var(--muted)}
+.tabs button.on{background:var(--red);border-color:var(--red);color:#fff}
+.clock{font-family:Teko;font-size:30px}
+.sm{font-size:15px;color:var(--muted)}
+.ghost{border:1px solid var(--line);border-radius:10px;padding:8px 12px;font-weight:600}
+.testbar{background:#3a2a0b;color:#ffd58a;padding:8px 16px;font-weight:700;text-align:center}
+.offline{background:#3a1012;color:#ffb4b7;padding:8px 16px;font-weight:700;text-align:center}
+
+/* Tickets */
+.board{display:grid;grid-template-columns:repeat(auto-fill,minmax(270px,1fr));gap:14px;padding:16px;align-items:start}
+.ticket{background:var(--card);border:1px solid var(--line);border-radius:14px;overflow:hidden;display:flex;flex-direction:column}
+.ticket.new{animation:pulse 1.2s ease 3}
+@keyframes pulse{50%{box-shadow:0 0 0 4px var(--red)}}
+.ticket .th{display:flex;align-items:baseline;justify-content:space-between;padding:10px 14px 6px;background:#2a2624}
+.ticket .th .tbl{font-family:Teko;font-size:40px;line-height:.9}
+.ticket .th .no{color:var(--muted);font-size:15px}
+.ticket .th .age{font-family:Teko;font-size:26px}
+.ticket.mid .th{background:#3a2a0b}.ticket.mid .age{color:#ffd58a}
+.ticket.late .th{background:#4a1416}.ticket.late .age{color:#ffb4b7}
+.ticket.ready .th{background:#123a20}
+.tl{display:flex;gap:10px;align-items:flex-start;padding:10px 14px;border-top:1px solid var(--line);width:100%;text-align:left}
+.tl .q{font-family:Teko;font-size:30px;line-height:.9;min-width:34px}
+.tl .n{font-weight:700;text-transform:uppercase;font-size:19px}
+.tl .o{color:#ffd58a;font-size:16px}
+.tl .st{margin-left:auto;font-size:13px;font-weight:700;text-transform:uppercase;padding:3px 8px;border-radius:6px;white-space:nowrap}
+.tl.a_faire .st{background:var(--line)}
+.tl.prete{opacity:.75}.tl.prete .st{background:#123a20;color:#9be3b3}
+.tl.servie{opacity:.4;text-decoration:line-through}.tl.servie .st{background:var(--line)}
+.tnote{padding:8px 14px;background:#3a1012;color:#ffd5d6;font-weight:600;font-size:16px}
+.ta{display:flex;gap:8px;padding:10px 14px;border-top:1px solid var(--line);margin-top:auto}
+.ta button{flex:1;padding:10px 6px 6px;border-radius:10px;font-family:Teko;font-size:22px;text-transform:uppercase}
+.b-ready{background:var(--ok);color:#06140b}
+.b-served{background:var(--line)}
+.empty{padding:80px 20px;text-align:center;color:var(--muted)}
+.empty .display{font-size:44px;color:var(--cream)}
+
+/* Admin */
+.admin{max-width:900px;margin:0 auto;padding:16px}
+.panel{background:var(--card);border:1px solid var(--line);border-radius:14px;padding:16px;margin-bottom:14px}
+.panel h2{margin:0 0 10px;font-size:30px;color:var(--red)}
+.kpis{display:flex;gap:12px;flex-wrap:wrap}
+.kpi{flex:1;min-width:140px;background:var(--bg2);border-radius:10px;padding:12px}
+.kpi b{font-family:Teko;font-size:40px;display:block;line-height:1}
+.sw{display:flex;align-items:center;gap:12px;padding:10px 0;border-bottom:1px solid var(--line)}
+.sw:last-child{border-bottom:0}
+.sw .l{flex:1}
+.toggle{width:56px;height:32px;border-radius:999px;background:var(--line);position:relative;flex:none;transition:.15s}
+.toggle::after{content:"";position:absolute;top:4px;left:4px;width:24px;height:24px;border-radius:50%;background:var(--cream);transition:.15s}
+.toggle.on{background:var(--ok)}
+.toggle.on::after{left:28px}
+input[type=search],input[type=password]{width:100%;background:var(--bg2);border:1px solid var(--line);border-radius:10px;padding:10px 12px;color:var(--cream);font:inherit}
+.items{max-height:520px;overflow:auto;margin-top:10px}
+.cathead{font-family:Teko;font-size:22px;text-transform:uppercase;color:var(--muted);margin:12px 0 2px}
+.seg{display:flex;gap:6px}
+.seg button{flex:1;padding:10px;border-radius:10px;border:1px solid var(--line);font-weight:700}
+.seg button.on{background:var(--red);border-color:var(--red);color:#fff}
+.warn{color:#ffd58a;font-size:16px;margin-top:8px}
+</style>
+</head>
+<body>
+<div id="login" class="login"><div class="box">
+  <img src="logo_on_dark.png" alt="BUFFALO">
+  <h1 class="display" id="lgTitle">Accès équipe</h1>
+  <div class="sm" id="lgSub">Entrez le code PIN</div>
+  <div class="dots" id="dots"></div>
+  <div class="pad" id="pad"></div>
+  <div class="msg" id="lgMsg"></div>
+</div></div>
+
+<div id="main" class="hidden">
+  <div class="top">
+    <img src="logo_on_dark.png" alt="">
+    <div class="tabs" id="tabs">
+      <button data-v="cuisine">Cuisine</button><button data-v="bar">Bar</button><button data-v="tout">Tout</button><button data-v="admin">Admin</button>
+    </div>
+    <a class="ghost" href="plan.html" style="text-decoration:none;color:inherit">Réservations</a><a class="ghost" href="fidelite.html" style="text-decoration:none;color:inherit">Fidélité</a>
+    <label class="sm"><input type="checkbox" id="showDone"> Afficher servis</label>
+    <button class="ghost" id="sound">🔔 Son activé</button>
+    <span class="clock" id="clock"></span>
+    <button class="ghost" id="logout">Verrouiller</button>
+  </div>
+  <div id="bars"></div>
+  <div id="view"></div>
+</div>
+
+<script>
+const CFG = window.BUFFALO;
+const $ = (s, el=document) => el.querySelector(s);
+const esc = s => String(s ?? '').replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+const fmt = n => (n||0).toLocaleString('fr-FR').replace(/ | /g,' ') + ' F';
+const ss = { get(k){try{return sessionStorage.getItem(k)}catch(e){return null}}, set(k,v){try{sessionStorage.setItem(k,v)}catch(e){}}, del(k){try{sessionStorage.removeItem(k)}catch(e){}} };
+const ls = { get(k){try{return localStorage.getItem(k)}catch(e){return null}}, set(k,v){try{localStorage.setItem(k,v)}catch(e){}} };
+async function rpc(fn, args={}) {
+  const r = await fetch(`${CFG.SUPABASE_URL}/rest/v1/rpc/${fn}`, { method:'POST', headers:{ apikey:CFG.SUPABASE_KEY, 'Content-Type':'application/json' }, body: JSON.stringify(args) });
+  const j = await r.json().catch(()=>null);
+  if (!r.ok) throw new Error(j?.message || 'Erreur réseau');
+  return j;
+}
+
+/* ---------- Connexion par PIN ---------- */
+let PIN = ss.get('buffalo_pin'), entry = '', setupStep = 0, firstPin = '', pinSet = true;
+const MAXLEN = 6;
+function drawDots(){ $('#dots').innerHTML = Array.from({length: Math.max(4, entry.length)}, (_,i) => `<i class="${i<entry.length?'on':''}"></i>`).join(''); }
+$('#pad').innerHTML = ['1','2','3','4','5','6','7','8','9','⌫','0','OK'].map(k => `<button data-k="${k}">${k}</button>`).join('');
+$('#pad').onclick = e => { const k = e.target.dataset?.k; if (!k) return; unlockAudio();
+  if (k==='⌫') entry = entry.slice(0,-1); else if (k==='OK') submitPin(); else if (entry.length < MAXLEN) entry += k; drawDots(); };
+document.addEventListener('keydown', e => { if ($('#login').classList.contains('hidden')) return;
+  if (/^\d$/.test(e.key) && entry.length < MAXLEN) entry += e.key; else if (e.key==='Backspace') entry = entry.slice(0,-1); else if (e.key==='Enter') submitPin(); drawDots(); });
+
+async function submitPin(){
+  $('#lgMsg').textContent = '';
+  if (entry.length < 4) { $('#lgMsg').textContent = '4 chiffres minimum'; return; }
+  try {
+    if (!pinSet) { // Création du PIN
+      if (setupStep === 0) { firstPin = entry; entry=''; setupStep = 1; $('#lgSub').textContent = 'Confirmez le code PIN'; drawDots(); return; }
+      if (entry !== firstPin) { setupStep = 0; entry=''; $('#lgSub').textContent = 'Choisissez un code PIN (4 à 6 chiffres)'; $('#lgMsg').textContent = 'Les codes ne correspondent pas'; drawDots(); return; }
+      await rpc('staff_set_pin', { p_old: null, p_new: entry });
+    }
+    const ok = await rpc('staff_login', { p_pin: entry });
+    if (!ok) { $('#lgMsg').textContent = 'Code incorrect'; entry=''; drawDots(); return; }
+    PIN = entry; ss.set('buffalo_pin', PIN); entry=''; enter();
+  } catch(e) { $('#lgMsg').textContent = e.message; entry=''; drawDots(); }
+}
+async function showLogin(){
+  $('#main').classList.add('hidden'); $('#login').classList.remove('hidden'); entry=''; drawDots();
+  try { const s = await rpc('staff_status'); pinSet = s.pin_set; } catch(e) {}
+  if (!pinSet) { $('#lgTitle').textContent = 'Première mise en service'; $('#lgSub').textContent = 'Choisissez un code PIN équipe (4 à 6 chiffres)'; }
+}
+$('#logout').onclick = () => { ss.del('buffalo_pin'); PIN = null; clearTimeout(timer); showLogin(); };
+
+/* ---------- Son ---------- */
+let actx = null, soundOn = ls.get('buffalo_sound') !== 'off';
+function unlockAudio(){ try { actx = actx || new (window.AudioContext||window.webkitAudioContext)(); actx.resume(); } catch(e){} }
+function beep(){ if (!soundOn || !actx) return; const t = actx.currentTime;
+  [0, .18, .36].forEach((d,i) => { const o = actx.createOscillator(), g = actx.createGain(); o.type='square'; o.frequency.value = i===2?1320:880;
+    g.gain.setValueAtTime(.0001,t+d); g.gain.exponentialRampToValueAtTime(.25,t+d+.01); g.gain.exponentialRampToValueAtTime(.0001,t+d+.15); o.connect(g).connect(actx.destination); o.start(t+d); o.stop(t+d+.16); }); }
+function drawSound(){ $('#sound').textContent = soundOn ? '🔔 Son activé' : '🔕 Son coupé'; }
+$('#sound').onclick = () => { unlockAudio(); soundOn = !soundOn; ls.set('buffalo_sound', soundOn?'on':'off'); drawSound(); if (soundOn) beep(); };
+
+/* ---------- Vue ---------- */
+let VIEW = ls.get('buffalo_view') || 'cuisine', timer = null, seen = new Set(JSON.parse(ss.get('buffalo_seen')||'[]')), firstLoad = true, status = {};
+function enter(){ $('#login').classList.add('hidden'); $('#main').classList.remove('hidden'); drawSound(); setView(VIEW); }
+function setView(v){ VIEW = v; ls.set('buffalo_view', v); $('#tabs').querySelectorAll('button').forEach(b => b.classList.toggle('on', b.dataset.v===v)); firstLoad = true; clearTimeout(timer); $('#view').innerHTML = ''; refresh(); }
+$('#tabs').onclick = e => { if (e.target.dataset.v) setView(e.target.dataset.v); };
+$('#showDone').onchange = () => refresh();
+setInterval(() => { $('#clock').textContent = new Date().toLocaleTimeString('fr-FR',{hour:'2-digit',minute:'2-digit',timeZone:'Pacific/Noumea'}); }, 1000);
+
+async function refresh(){
+  clearTimeout(timer);
+  try {
+    status = await rpc('staff_status');
+    $('#bars').innerHTML = status.payment_mode === 'simulation' ? `<div class="testbar">MODE TEST — les paiements sont simulés. Passez en mode EpayNC dans Admin avant l'ouverture.</div>` : '';
+    if (!status.ordering_open) $('#bars').innerHTML += `<div class="offline">Commande à table fermée aux clients</div>`;
+    if (VIEW === 'admin') { await renderAdmin(); return; }
+    const data = await rpc('staff_orders', { p_pin: PIN, p_station: VIEW, p_include_done: $('#showDone').checked });
+    if (data === null) { ss.del('buffalo_pin'); return showLogin(); }
+    renderBoard(data);
+  } catch(e) { $('#bars').innerHTML = `<div class="offline">Connexion perdue — nouvel essai… (${esc(e.message)})</div>`; }
+  timer = setTimeout(refresh, 4000);
+}
+
+function renderBoard(orders){
+  const fresh = orders.filter(o => !seen.has(o.id));
+  fresh.forEach(o => seen.add(o.id)); ss.set('buffalo_seen', JSON.stringify([...seen].slice(-300)));
+  if (fresh.length && !firstLoad) beep();
+  if (!orders.length) { $('#view').innerHTML = `<div class="empty"><div class="display">Aucune commande en attente</div><p>Les nouvelles commandes payées apparaissent ici automatiquement.</p></div>`; firstLoad = false; return; }
+  const now = Date.now();
+  const lab = { a_faire:'À faire', prete:'Prêt', servie:'Servi' };
+  $('#view').innerHTML = `<div class="board">${orders.map(o => {
+    const mins = Math.floor((now - new Date(o.paid_at)) / 60000);
+    const allReady = o.lines.every(l => l.status !== 'a_faire');
+    const cls = allReady ? 'ready' : mins >= 20 ? 'late' : mins >= 10 ? 'mid' : '';
+    return `<div class="ticket ${cls} ${(!firstLoad && fresh.some(f=>f.id===o.id))?'new':''}">
+      <div class="th"><div><div class="tbl">Table ${o.table}</div><div class="no">n° ${o.number}${o.test?' · TEST':''}</div></div><div class="age">${mins} min</div></div>
+      ${o.note ? `<div class="tnote">⚠ ${esc(o.note)}</div>` : ''}
+      ${o.lines.map(l => `<button class="tl ${l.status}" data-line="${l.id}" data-st="${l.status}"><span class="q">${l.qty}×</span><span><div class="n">${esc(l.name)}</div>${l.options?`<div class="o">${esc(l.options)}</div>`:''}</span><span class="st">${lab[l.status]}</span></button>`).join('')}
+      <div class="ta"><button class="b-ready" data-all="${o.id}" data-to="prete">Tout prêt</button><button class="b-served" data-all="${o.id}" data-to="servie">Servi</button></div>
+    </div>`; }).join('')}</div>`;
+  firstLoad = false;
+  const byId = Object.fromEntries(orders.map(o => [o.id, o]));
+  $('#view').querySelectorAll('[data-line]').forEach(b => b.onclick = async () => {
+    const next = { a_faire:'prete', prete:'servie', servie:'a_faire' }[b.dataset.st];
+    b.style.opacity = .4; await setLine(+b.dataset.line, next); refresh(); });
+  $('#view').querySelectorAll('[data-all]').forEach(b => b.onclick = async () => {
+    b.disabled = true; const o = byId[b.dataset.all];
+    await Promise.all(o.lines.filter(l => l.status !== 'servie' && l.status !== b.dataset.to).map(l => setLine(l.id, b.dataset.to))); refresh(); });
+}
+async function setLine(id, st){ try { await rpc('staff_set_line_status', { p_pin: PIN, p_line: id, p_status: st }); } catch(e) { alert(e.message); } }
+
+/* ---------- Admin ---------- */
+let adminFilter = '';
+async function renderAdmin(){
+  const [sum, services, menu] = await Promise.all([ rpc('staff_day_summary', {p_pin:PIN}), rpc('staff_services', {p_pin:PIN}), rpc('get_menu') ]);
+  if (sum === null) { ss.del('buffalo_pin'); return showLogin(); }
+  const keepScroll = $('.items')?.scrollTop || 0;
+  const typing = document.activeElement?.id === 'flt';
+  $('#view').innerHTML = `<div class="admin">
+    <div class="panel"><h2 class="display">Aujourd'hui</h2><div class="kpis">
+      <div class="kpi"><b>${sum.orders}</b>commandes payées</div><div class="kpi"><b>${fmt(sum.total)}</b>encaissé via QR code</div>
+      ${sum.test_orders ? `<div class="kpi"><b>${sum.test_orders}</b>dont commandes de test</div>`:''}</div></div>
+
+    <div class="panel"><h2 class="display">Ouverture</h2>
+      <div class="sw"><div class="l"><b>Commande à table</b><div class="sm">Coupez-la en cas de rush ou de fermeture : les clients voient un message.</div></div><button class="toggle ${status.ordering_open?'on':''}" id="tgOpen" aria-label="Commande à table"></button></div>
+      ${services.map(s => `<div class="sw"><div class="l"><b>${esc(s.label)}</b><div class="sm">${s.closed_today ? 'Fermé jusqu\'à cette nuit (réouverture auto à 1h)' : s.open_now ? 'Ouvert en ce moment' : 'Hors horaires en ce moment'}</div></div><button class="toggle ${s.closed_today?'':'on'}" data-svc="${s.id}" data-closed="${s.closed_today}" aria-label="${esc(s.label)}"></button></div>`).join('')}
+    </div>
+
+    <div class="panel"><h2 class="display">Disponibilité des produits</h2>
+      <input type="search" id="flt" placeholder="Rechercher un produit…" value="${esc(adminFilter)}">
+      <div class="items">${menu.categories.map(c => { const its = c.items.filter(i => !adminFilter || i.name.toLowerCase().includes(adminFilter.toLowerCase())); if (!its.length) return '';
+        return `<div class="cathead">${esc(c.name)}</div>` + its.map(i => `<div class="sw"><div class="l">${esc(i.name)} <span class="sm">${fmt(i.price)}</span></div><span class="sm">${i.available?'Disponible':'Épuisé'}</span><button class="toggle ${i.available?'on':''}" data-item="${i.id}" data-av="${i.available}" aria-label="${esc(i.name)}"></button></div>`).join(''); }).join('')}</div>
+    </div>
+
+    <div class="panel"><h2 class="display">Paiement</h2>
+      <div class="seg"><button data-mode="simulation" class="${status.payment_mode==='simulation'?'on':''}">Simulation (tests)</button><button data-mode="epaync" class="${status.payment_mode==='epaync'?'on':''}">EpayNC (réel)</button></div>
+      <div class="warn">${status.payment_mode==='simulation' ? 'En simulation, toute commande est considérée payée : à n\'utiliser que pour les essais avec l\'équipe.' : 'Les clients paient par carte sur la page sécurisée EpayNC. La commande n\'apparaît ici qu\'une fois le paiement confirmé.'}</div>
+    </div>
+
+    <div class="panel"><h2 class="display">Code PIN équipe</h2>
+      <div style="display:flex;gap:8px;flex-wrap:wrap"><input type="password" inputmode="numeric" id="pinOld" placeholder="PIN actuel" style="flex:1;min-width:140px"><input type="password" inputmode="numeric" id="pinNew" placeholder="Nouveau PIN (4 à 6 chiffres)" style="flex:1;min-width:140px"><button class="ghost" id="pinSave">Changer</button></div>
+      <div class="sm" id="pinMsg" style="margin-top:6px"></div>
+    </div>
+  </div>`;
+  $('.items').scrollTop = keepScroll;
+  const flt = $('#flt'); if (typing) { flt.focus(); flt.setSelectionRange(flt.value.length, flt.value.length); }
+  flt.oninput = () => { adminFilter = flt.value; clearTimeout(timer); clearTimeout(flt._t); flt._t = setTimeout(refresh, 250); };
+  $('#tgOpen').onclick = async () => { await rpc('staff_set_ordering_open', {p_pin:PIN, p_open: !status.ordering_open}); refresh(); };
+  $('#view').querySelectorAll('[data-svc]').forEach(b => b.onclick = async () => { await rpc('staff_set_service_closed', {p_pin:PIN, p_service:b.dataset.svc, p_closed: b.dataset.closed !== 'true'}); refresh(); });
+  $('#view').querySelectorAll('[data-item]').forEach(b => b.onclick = async () => { b.classList.toggle('on'); await rpc('staff_set_available', {p_pin:PIN, p_item:+b.dataset.item, p_available: b.dataset.av !== 'true'}); refresh(); });
+  $('#view').querySelectorAll('[data-mode]').forEach(b => b.onclick = async () => {
+    if (b.dataset.mode === status.payment_mode) return;
+    const msg = b.dataset.mode === 'epaync' ? 'Passer en paiement réel EpayNC ? Vérifiez d\'abord qu\'un paiement test a fonctionné.' : 'Repasser en SIMULATION ? Les clients pourront commander sans payer.';
+    if (!confirm(msg)) return; await rpc('staff_set_payment_mode', {p_pin:PIN, p_mode:b.dataset.mode}); refresh(); });
+  $('#pinSave').onclick = async () => { try { const ok = await rpc('staff_set_pin', {p_old: $('#pinOld').value, p_new: $('#pinNew').value});
+      if (!ok) { $('#pinMsg').textContent = 'PIN actuel incorrect.'; return; }
+      PIN = $('#pinNew').value; ss.set('buffalo_pin', PIN); $('#pinMsg').textContent = 'PIN modifié. Communiquez-le à l\'équipe.'; } catch(e) { $('#pinMsg').textContent = e.message; } };
+  timer = setTimeout(refresh, 30000);
+}
+
+/* ---------- Démarrage ---------- */
+(async () => { if (PIN) { try { if (await rpc('staff_login', {p_pin: PIN})) return enter(); } catch(e){} ss.del('buffalo_pin'); } showLogin(); })();
+</script>
+</body>
+</html>
